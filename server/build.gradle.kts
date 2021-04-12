@@ -2,9 +2,16 @@ val logback_version: String by project
 val ktor_version: String by project
 val kotlin_version: String by project
 
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-allopen:1.4.30")
+    }
+}
+
 plugins {
     application
     kotlin("jvm") version "1.4.30"
+    kotlin("plugin.allopen") version "1.4.30"
     id("koin")
 }
 
@@ -39,6 +46,13 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.19.0")
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation("org.koin:koin-test:$koinVersion")
+    testImplementation("org.mockito:mockito-core:3.9.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:3.9.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:3.1.0")
+}
+
+allOpen {
+    annotation("dev.drzepka.tempmonitor.server.domain.util.Mockable")
 }
 
 configurations {

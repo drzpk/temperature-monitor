@@ -3,7 +3,7 @@ package dev.drzepka.tempmonitor.server.domain.dto
 import dev.drzepka.tempmonitor.server.domain.entity.Device
 import java.time.Instant
 
-class DeviceDTO private constructor() {
+class DeviceDTO {
     var id = 0
     var name = ""
     var description = ""
