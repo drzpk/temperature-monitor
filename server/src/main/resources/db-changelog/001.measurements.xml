@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
+
+    <changeSet id="001.measurements.devices" author="Dominik Rzepka">
+        <createTable tableName="devices">
+            <column name="id" type="int" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="varchar(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(256)"/>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="boolean">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="001.measurements.measurements" author="Dominik Rzepka">
+        <createTable tableName="measurements">
+            <column name="time" type="timestamp">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="device_id" type="int">
+                <!-- no foreign key is defined because partitioned table cannot have those -->
+                <constraints nullable="false"/>
+            </column>
+            <column name="temperature" type="decimal(4, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="humidity" type="int(2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="battery_voltage" type="decimal(5, 3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="battery_level" type="int(3)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <modifySql dbms="mariadb">
+            <append value=" PARTITION BY RANGE(UNIX_TIMESTAMP(time)) (
+                    PARTITION p0 VALUES LESS THAN (UNIX_TIMESTAMP('2022-01-01 00:00:00')),
+                    PARTITION p1 VALUES LESS THAN (UNIX_TIMESTAMP('2023-01-01 00:00:00')),
+                    PARTITION p2 VALUES LESS THAN (UNIX_TIMESTAMP('2024-01-01 00:00:00')),
+                    PARTITION p_max VALUES LESS THAN MAXVALUE
+                )"/>
+        </modifySql>
+    </changeSet>
+
+</databaseChangeLog>
