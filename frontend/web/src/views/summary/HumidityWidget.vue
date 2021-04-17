@@ -40,7 +40,7 @@
                 const old = this.humidity;
                 this.humidity = Math.floor(100 * Math.random());
                 this.updateWidget(old);
-            }, 1000);
+            }, 3000);
         }
 
         private initializeWidget() {

@@ -1,13 +1,17 @@
-import Overview from '@/views/Overview.vue';
 import Vue from 'vue'
 import VueRouter, {RouteConfig} from 'vue-router'
+import Devices from "@/views/Devices.vue";
 
 Vue.use(VueRouter);
 
 const routes: Array<RouteConfig> = [
     {
         path: '/',
-        component: Overview
+        redirect: '/devices'
+    },
+    {
+        path: '/devices',
+        component: Devices
     }
 ];
 
