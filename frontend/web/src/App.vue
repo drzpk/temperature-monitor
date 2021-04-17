@@ -1,6 +1,6 @@
 <template>
     <div id="app">
-        Nothing here yet
+        <RouterView/>
     </div>
 </template>
 
