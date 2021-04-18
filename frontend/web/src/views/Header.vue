@@ -3,7 +3,9 @@
         <div>
             <div>
                 <font-awesome-icon icon="thermometer-half"/>
-                <h1>Temperature monitor</h1>
+                <h1>
+                    <router-link to="/">Temperature monitor</router-link>
+                </h1>
             </div>
         </div>
     </header>
@@ -23,6 +25,7 @@
         height: 4em;
         background-color: powderblue;
         text-align: center;
+        margin-bottom: 1.5em;
 
         > div {
             display: inline-block;
@@ -38,6 +41,11 @@
                 > h1 {
                     margin: 0 0.4em;
                     font-size: inherit;
+
+                    > a {
+                        color: inherit;
+                        text-decoration: none !important;
+                    }
                 }
             }
         }

@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter, {RouteConfig} from 'vue-router'
 import Devices from "@/views/Devices.vue";
+import EditDevice from "@/views/EditDevice.vue";
 
 Vue.use(VueRouter);
 
@@ -12,6 +13,14 @@ const routes: Array<RouteConfig> = [
     {
         path: '/devices',
         component: Devices
+    },
+    {
+        path: '/devices/add',
+        component: EditDevice
+    },
+    {
+        path: '/devices/:id/edit',
+        component: EditDevice
     }
 ];
 
