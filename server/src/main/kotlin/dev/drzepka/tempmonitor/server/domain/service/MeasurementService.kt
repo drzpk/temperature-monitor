@@ -1,14 +1,19 @@
 package dev.drzepka.tempmonitor.server.domain.service
 
 import dev.drzepka.tempmonitor.server.domain.dto.CreateMeasurementRequest
+import dev.drzepka.tempmonitor.server.domain.dto.GetMeasurementsRequest
+import dev.drzepka.tempmonitor.server.domain.dto.MeasurementDTO
 import dev.drzepka.tempmonitor.server.domain.entity.Measurement
 import dev.drzepka.tempmonitor.server.domain.entity.table.MeasurementsTable
+import dev.drzepka.tempmonitor.server.domain.service.measurement.MeasurementProcessor
+import dev.drzepka.tempmonitor.server.domain.service.measurement.TestMeasurementDataGenerator
 import dev.drzepka.tempmonitor.server.domain.util.Logger
 import dev.drzepka.tempmonitor.server.domain.util.ValidationErrors
 import org.jetbrains.exposed.sql.SortOrder
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class MeasurementService(
     configurationProviderService: ConfigurationProviderService,
@@ -31,6 +36,23 @@ class MeasurementService(
             batteryLevel = request.batteryLevel
         }
         log.debug("Created measurement {} for device {}", measurement.id.value.epochSecond, measurement.deviceId)
+    }
+
+    fun getMeasurements(request: GetMeasurementsRequest): MeasurementProcessor {
+        val sequence = if (request.deviceId == -1) {
+            val testGenerator = TestMeasurementDataGenerator(
+                Instant.now().minus(3, ChronoUnit.HOURS),
+                Instant.now(),
+                Duration.ofSeconds(15)
+            )
+            testGenerator.asSequence()
+        } else {
+            // Check if device exists
+            deviceService.getDevice(request.deviceId)
+            getData(request)
+        }
+
+        return MeasurementProcessor(sequence)
     }
 
     private fun validateAddMeasurement(request: CreateMeasurementRequest) {
@@ -63,6 +85,13 @@ class MeasurementService(
             val remainingCooldown = Duration.between(lastTime, now)
             throw IllegalStateException("Measurement for device $deviceId added too quickly, need to wait another $remainingCooldown")
         }
+    }
+
+    private fun getData(request: GetMeasurementsRequest): Sequence<MeasurementDTO> {
+        return Measurement.find { MeasurementsTable.deviceId eq request.deviceId }
+            .orderBy(MeasurementsTable.id to SortOrder.ASC)
+            .asSequence()
+            .map { MeasurementDTO.fromEntity(it) }
     }
 
     companion object {
