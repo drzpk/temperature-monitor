@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import charts from './modules/charts';
 import devices from './modules/devices';
 
 Vue.use(Vuex);
@@ -25,6 +26,7 @@ export default new Vuex.Store<State>({
 
     },
     modules: {
-        devices: devices
+        devices: devices,
+        charts: charts
     }
 })
