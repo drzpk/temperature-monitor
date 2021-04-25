@@ -3,11 +3,14 @@ package dev.drzepka.tempmonitor.server.domain.service
 import dev.drzepka.tempmonitor.server.domain.dto.CreateDeviceRequest
 import dev.drzepka.tempmonitor.server.domain.dto.DeviceDTO
 import dev.drzepka.tempmonitor.server.domain.entity.Device
+import dev.drzepka.tempmonitor.server.domain.entity.Measurement
 import dev.drzepka.tempmonitor.server.domain.entity.table.DevicesTable
+import dev.drzepka.tempmonitor.server.domain.entity.table.MeasurementsTable
 import dev.drzepka.tempmonitor.server.domain.exception.NotFoundException
 import dev.drzepka.tempmonitor.server.domain.util.Logger
 import dev.drzepka.tempmonitor.server.domain.util.Mockable
 import dev.drzepka.tempmonitor.server.domain.util.ValidationErrors
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
@@ -20,7 +23,14 @@ class DeviceService {
     fun getDevices(): Collection<DeviceDTO> {
         return transaction {
             Device.find { DevicesTable.active eq true }
-                .map { DeviceDTO.fromEntity(it) }
+                .map {
+                    val lastMeasurement = Measurement
+                        .find { MeasurementsTable.deviceId eq it.id.value }
+                        .orderBy(MeasurementsTable.id to SortOrder.DESC)
+                        .limit(1)
+                        .firstOrNull()
+                    DeviceDTO.fromEntity(it, lastMeasurement)
+                }
         }
     }
 

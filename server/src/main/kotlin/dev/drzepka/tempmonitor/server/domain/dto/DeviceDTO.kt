@@ -1,6 +1,7 @@
 package dev.drzepka.tempmonitor.server.domain.dto
 
 import dev.drzepka.tempmonitor.server.domain.entity.Device
+import dev.drzepka.tempmonitor.server.domain.entity.Measurement
 import java.time.Instant
 
 class DeviceDTO {
@@ -8,13 +9,15 @@ class DeviceDTO {
     var name = ""
     var description = ""
     var createdAt: Instant = Instant.now()
+    var lastMeasurement: MeasurementDTO? = null
 
     companion object {
-        fun fromEntity(source: Device): DeviceDTO = DeviceDTO().apply {
-            id = source.id.value
-            name = source.name
-            description = source.description
-            createdAt = source.createdAt
+        fun fromEntity(device: Device, lastMeasurement: Measurement? = null): DeviceDTO = DeviceDTO().apply {
+            id = device.id.value
+            name = device.name
+            description = device.description
+            createdAt = device.createdAt
+            this.lastMeasurement = lastMeasurement?.let { MeasurementDTO.fromEntity(it) }
         }
     }
 }
