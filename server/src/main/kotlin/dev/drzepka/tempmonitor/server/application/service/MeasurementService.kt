@@ -1,15 +1,16 @@
-package dev.drzepka.tempmonitor.server.domain.service
+package dev.drzepka.tempmonitor.server.application.service
 
-import dev.drzepka.tempmonitor.server.domain.dto.CreateMeasurementRequest
-import dev.drzepka.tempmonitor.server.domain.dto.GetMeasurementsRequest
-import dev.drzepka.tempmonitor.server.domain.dto.MeasurementDTO
+import dev.drzepka.tempmonitor.server.application.ValidationErrors
+import dev.drzepka.tempmonitor.server.application.dto.measurement.CreateMeasurementRequest
+import dev.drzepka.tempmonitor.server.application.dto.measurement.GetMeasurementsRequest
+import dev.drzepka.tempmonitor.server.application.dto.measurement.MeasurementResource
+import dev.drzepka.tempmonitor.server.domain.entity.Device
 import dev.drzepka.tempmonitor.server.domain.entity.Measurement
-import dev.drzepka.tempmonitor.server.domain.entity.table.MeasurementsTable
+import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
+import dev.drzepka.tempmonitor.server.domain.repository.MeasurementRepository
 import dev.drzepka.tempmonitor.server.domain.service.measurement.MeasurementProcessor
 import dev.drzepka.tempmonitor.server.domain.service.measurement.TestMeasurementDataGenerator
 import dev.drzepka.tempmonitor.server.domain.util.Logger
-import dev.drzepka.tempmonitor.server.domain.util.ValidationErrors
-import org.jetbrains.exposed.sql.SortOrder
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -17,25 +18,27 @@ import java.time.temporal.ChronoUnit
 
 class MeasurementService(
     configurationProviderService: ConfigurationProviderService,
-    private val deviceService: DeviceService
+    private val deviceRepository: DeviceRepository,
+    private val measurementRepository: MeasurementRepository
 ) {
     private val log by Logger()
     private val minimumCreationInterval =
         configurationProviderService.getInt("measurements.minimumCreationIntervalSeconds")
 
     fun addMeasurement(request: CreateMeasurementRequest) {
-        validateAddMeasurement(request)
-        checkDeviceExists(request.deviceId)
+        val device = validateAddMeasurement(request)
         checkMeasurementNotAddedBeforeInterval(request.deviceId)
 
-        val measurement = Measurement.new(Instant.now()) {
-            deviceId = request.deviceId
+        val measurement = Measurement(device).apply {
+            id = Instant.now()
             temperature = request.temperature
             humidity = request.humidity
             batteryVoltage = request.batteryVoltage
             batteryLevel = request.batteryLevel
         }
-        log.debug("Created measurement {} for device {}", measurement.id.value.epochSecond, measurement.deviceId)
+
+        measurementRepository.save(measurement)
+        log.debug("Created measurement {} for device {}", measurement.id!!.epochSecond, device.id)
     }
 
     fun getMeasurements(request: GetMeasurementsRequest): MeasurementProcessor {
@@ -48,14 +51,15 @@ class MeasurementService(
             testGenerator.asSequence()
         } else {
             // Check if device exists
-            deviceService.getDevice(request.deviceId)
-            getData(request)
+            deviceRepository.findById(request.deviceId)!!
+            measurementRepository.findForDevice(request.deviceId, request)
+                .map { MeasurementResource.fromEntity(it) }
         }
 
         return MeasurementProcessor(sequence)
     }
 
-    private fun validateAddMeasurement(request: CreateMeasurementRequest) {
+    private fun validateAddMeasurement(request: CreateMeasurementRequest): Device {
         val validation = ValidationErrors()
 
         if (request.temperature < MIN_ALLOWED_TEMPERATURE || request.temperature > MAX_ALLOWED_TEMPERATURE)
@@ -67,31 +71,24 @@ class MeasurementService(
         if (request.batteryVoltage < MIN_ALLOWED_BATTERY_VOLTAGE || request.batteryVoltage > MAX_ALLOWED_BATTERY_VOLTAGE)
             validation.addFieldError("batteryVoltage", "Battery voltage is out of allowed bounds: [0; 10].")
 
-        validation.verify()
-    }
+        val device = deviceRepository.findById(request.deviceId)
+        if (device == null || !device.active)
+            validation.addFieldError("deviceId", "Device wasn't found")
 
-    private fun checkDeviceExists(deviceId: Int) {
-        deviceService.getDevice(deviceId)
+        validation.verify()
+
+        return device!!
     }
 
     private fun checkMeasurementNotAddedBeforeInterval(deviceId: Int) {
-        val lastMeasurement = Measurement.find { MeasurementsTable.deviceId eq deviceId }
-            .orderBy(MeasurementsTable.id to SortOrder.DESC)
-            .firstOrNull() ?: return
+        val lastMeasurement = measurementRepository.findLastForDevice(deviceId) ?: return
 
-        val lastTime = lastMeasurement.id.value
+        val lastTime = lastMeasurement.id!!
         val now = Instant.now()
         if (!lastTime.plusSeconds(minimumCreationInterval.toLong()).isBefore(now)) {
             val remainingCooldown = Duration.between(lastTime, now)
             throw IllegalStateException("Measurement for device $deviceId added too quickly, need to wait another $remainingCooldown")
         }
-    }
-
-    private fun getData(request: GetMeasurementsRequest): Sequence<MeasurementDTO> {
-        return Measurement.find { MeasurementsTable.deviceId eq request.deviceId }
-            .orderBy(MeasurementsTable.id to SortOrder.ASC)
-            .asSequence()
-            .map { MeasurementDTO.fromEntity(it) }
     }
 
     companion object {

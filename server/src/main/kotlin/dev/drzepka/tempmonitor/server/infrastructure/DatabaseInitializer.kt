@@ -1,8 +1,7 @@
-package dev.drzepka.tempmonitor.server.infrastructure.service
+package dev.drzepka.tempmonitor.server.infrastructure
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import dev.drzepka.tempmonitor.server.domain.service.DatabaseProviderService
 import dev.drzepka.tempmonitor.server.domain.util.Logger
 import io.ktor.config.*
 import liquibase.Contexts
@@ -14,9 +13,7 @@ import liquibase.resource.ClassLoaderResourceAccessor
 import org.jetbrains.exposed.sql.Database
 import javax.sql.DataSource
 
-class DatabaseProviderServiceImpl(config: ApplicationConfig) : DatabaseProviderService {
-
-    override val db: Database
+class DatabaseInitializer(config: ApplicationConfig) {
 
     private val log by Logger()
 
@@ -31,7 +28,7 @@ class DatabaseProviderServiceImpl(config: ApplicationConfig) : DatabaseProviderS
         liquibase.update(Contexts(), LabelExpression())
 
         log.info("Creating the database connection")
-        db = Database.connect(dataSource)
+        Database.connect(dataSource)
     }
 
     private fun getDataSource(config: ApplicationConfig): DataSource {

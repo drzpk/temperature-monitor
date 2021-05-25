@@ -1,63 +1,59 @@
-package dev.drzepka.tempmonitor.server.domain.service
+package dev.drzepka.tempmonitor.server.application.service
 
-import dev.drzepka.tempmonitor.server.domain.dto.CreateDeviceRequest
-import dev.drzepka.tempmonitor.server.domain.dto.DeviceDTO
+import dev.drzepka.tempmonitor.server.application.ValidationErrors
+import dev.drzepka.tempmonitor.server.application.dto.device.CreateDeviceRequest
+import dev.drzepka.tempmonitor.server.application.dto.device.DeviceResource
 import dev.drzepka.tempmonitor.server.domain.entity.Device
-import dev.drzepka.tempmonitor.server.domain.entity.Measurement
-import dev.drzepka.tempmonitor.server.domain.entity.table.DevicesTable
-import dev.drzepka.tempmonitor.server.domain.entity.table.MeasurementsTable
 import dev.drzepka.tempmonitor.server.domain.exception.NotFoundException
+import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
+import dev.drzepka.tempmonitor.server.domain.repository.MeasurementRepository
 import dev.drzepka.tempmonitor.server.domain.util.Logger
 import dev.drzepka.tempmonitor.server.domain.util.Mockable
-import dev.drzepka.tempmonitor.server.domain.util.ValidationErrors
-import org.jetbrains.exposed.sql.SortOrder
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 
 @Mockable
-class DeviceService {
+class DeviceService(
+    private val deviceRepository: DeviceRepository,
+    private val measurementRepository: MeasurementRepository
+) {
 
     private val log by Logger()
 
-    fun getDevices(): Collection<DeviceDTO> {
-        return transaction {
-            Device.find { DevicesTable.active eq true }
-                .map {
-                    val lastMeasurement = Measurement
-                        .find { MeasurementsTable.deviceId eq it.id.value }
-                        .orderBy(MeasurementsTable.id to SortOrder.DESC)
-                        .limit(1)
-                        .firstOrNull()
-                    DeviceDTO.fromEntity(it, lastMeasurement)
-                }
-        }
+    fun getDevices(): Collection<DeviceResource> {
+        return deviceRepository.findAll()
+            .map {
+                val lastMeasurement = measurementRepository.findLastForDevice(it.id!!)
+                DeviceResource.fromEntity(it, lastMeasurement)
+            }
     }
 
-    fun createDevice(request: CreateDeviceRequest): DeviceDTO {
+    fun createDevice(request: CreateDeviceRequest): DeviceResource {
         validateCreateDevice(request)
 
         log.info("Creating new device with name '{}' and description '{}'", request.name, request.description)
-        val created = Device.new {
+        val device = Device().apply {
             name = request.name!!
             description = request.description!!
             createdAt = Instant.now()
             active = true
         }
 
-        log.info("Created new device with id {}", created.id.value)
-        return DeviceDTO.fromEntity(created)
+        deviceRepository.save(device)
+
+        log.info("Created new device with id {}", device.id)
+        return DeviceResource.fromEntity(device)
     }
 
-    fun getDevice(deviceId: Int): DeviceDTO {
+    fun getDevice(deviceId: Int): DeviceResource {
         val device = getDeviceEntity(deviceId)
-        return DeviceDTO.fromEntity(device)
+        return DeviceResource.fromEntity(device)
     }
 
     fun deleteDevice(deviceId: Int) {
         log.info("Deleting device {}", deviceId)
         val device = getDeviceEntity(deviceId)
         device.active = false
+        deviceRepository.save(device)
     }
 
     private fun validateCreateDevice(request: CreateDeviceRequest) {
@@ -68,7 +64,7 @@ class DeviceService {
             validation.addFieldError("description", "Description must have length between 1 and 256 characters")
 
         if (request.name != null) {
-            val found = !Device.find { (DevicesTable.active eq true) and (DevicesTable.name eq request.name!!) }.empty()
+            val found = deviceRepository.findByNameAndActive(request.name!!, true) != null
             if (found)
                 validation.addObjectError("Device with name \"${request.name!!}\" already exists.")
         }
@@ -77,7 +73,7 @@ class DeviceService {
     }
 
     private fun getDeviceEntity(deviceId: Int): Device {
-        var device = Device.findById(deviceId)
+        var device = deviceRepository.findById(deviceId)
         if (device?.active != true)
             device = null
 

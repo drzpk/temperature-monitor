@@ -3,7 +3,7 @@ package dev.drzepka.tempmonitor.server.domain.service.measurement
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.readValue
-import dev.drzepka.tempmonitor.server.domain.dto.MeasurementDTO
+import dev.drzepka.tempmonitor.server.application.dto.measurement.MeasurementResource
 import org.assertj.core.api.BDDAssertions.then
 import org.junit.jupiter.api.Test
 import java.io.ByteArrayOutputStream
@@ -43,8 +43,8 @@ class MeasurementProcessorTest {
         then(second.humidity).isEqualTo(96)
     }
 
-    private fun createMeasurement(time: LocalTime, temperature: Int, humidity: Int): MeasurementDTO {
-        return MeasurementDTO().apply {
+    private fun createMeasurement(time: LocalTime, temperature: Int, humidity: Int): MeasurementResource {
+        return MeasurementResource().apply {
             this.time = localTimeToInstant(time)
             this.temperature = BigDecimal.valueOf(temperature.toLong()).setScale(1, RoundingMode.UNNECESSARY)
             this.humidity = humidity
@@ -54,7 +54,7 @@ class MeasurementProcessorTest {
     private fun localTimeToInstant(localTime: LocalTime): Instant =
         today.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant()
 
-    private fun processAndConvert(processor: MeasurementProcessor): List<MeasurementDTO> {
+    private fun processAndConvert(processor: MeasurementProcessor): List<MeasurementResource> {
         val byteStream = ByteArrayOutputStream()
         processor.writeToStream(byteStream)
         val bytes = byteStream.toByteArray()

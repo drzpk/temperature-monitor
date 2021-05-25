@@ -1,4 +1,4 @@
-package dev.drzepka.tempmonitor.server.domain.util
+package dev.drzepka.tempmonitor.server.application
 
 import dev.drzepka.tempmonitor.server.domain.exception.ValidationException
 

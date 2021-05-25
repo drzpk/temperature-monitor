@@ -1,10 +1,10 @@
 package dev.drzepka.tempmonitor.server.application.handler
 
+import dev.drzepka.tempmonitor.server.application.FieldError
+import dev.drzepka.tempmonitor.server.application.ObjectError
+import dev.drzepka.tempmonitor.server.application.ValidationError
 import dev.drzepka.tempmonitor.server.application.dto.ValidationErrorDTO
 import dev.drzepka.tempmonitor.server.application.dto.ValidationErrorsDTO
-import dev.drzepka.tempmonitor.server.domain.util.FieldError
-import dev.drzepka.tempmonitor.server.domain.util.ObjectError
-import dev.drzepka.tempmonitor.server.domain.util.ValidationError
 import dev.drzepka.tempmonitor.server.domain.exception.ValidationException
 import io.ktor.http.*
 

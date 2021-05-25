@@ -2,13 +2,13 @@ package dev.drzepka.tempmonitor.server.domain.service.measurement
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import dev.drzepka.tempmonitor.server.domain.dto.MeasurementDTO
+import dev.drzepka.tempmonitor.server.application.dto.measurement.MeasurementResource
 import java.io.OutputStream
 
 /**
  * This class allows to process measurements sequentially without reading them all into memory.
  */
-class MeasurementProcessor(private val sequence: Sequence<MeasurementDTO>) {
+class MeasurementProcessor(private val sequence: Sequence<MeasurementResource>) {
 
     private val objectMapper = ObjectMapper().apply {
         registerModule(JavaTimeModule())

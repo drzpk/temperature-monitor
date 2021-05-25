@@ -1,4 +1,4 @@
-package dev.drzepka.tempmonitor.server.domain.dto
+package dev.drzepka.tempmonitor.server.application.dto.device
 
 class CreateDeviceRequest {
     var name: String? = null

@@ -1,4 +1,4 @@
-package dev.drzepka.tempmonitor.server.domain.dto
+package dev.drzepka.tempmonitor.server.application.dto.measurement
 
 import java.math.BigDecimal
 

@@ -1,9 +1,9 @@
-package dev.drzepka.tempmonitor.server.domain.entity.table
+package dev.drzepka.tempmonitor.server.infrastructure.repository.table
 
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.`java-time`.timestamp
 
-object DevicesTable : IntIdTable("devices") {
+object Devices : IntIdTable("devices") {
     val name = varchar("name", 64)
     val description = varchar("description", 256)
     val createdAt = timestamp("created_at")

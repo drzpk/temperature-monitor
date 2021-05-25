@@ -1,8 +1,8 @@
 package dev.drzepka.tempmonitor.server.presentation
 
-import dev.drzepka.tempmonitor.server.domain.dto.CreateMeasurementRequest
-import dev.drzepka.tempmonitor.server.domain.dto.GetMeasurementsRequest
-import dev.drzepka.tempmonitor.server.domain.service.MeasurementService
+import dev.drzepka.tempmonitor.server.application.dto.measurement.CreateMeasurementRequest
+import dev.drzepka.tempmonitor.server.application.dto.measurement.GetMeasurementsRequest
+import dev.drzepka.tempmonitor.server.application.service.MeasurementService
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -26,17 +26,16 @@ fun Route.measurementController() {
         }
 
         get("") {
-            val request = GetMeasurementsRequest().apply {
-                deviceId = call.parameters["deviceId"]!!.toInt()
-            }
+            val request = GetMeasurementsRequest()
+                .apply {
+                    deviceId = call.parameters["deviceId"]!!.toInt()
+                }
             val processor = transaction {
                 measurementService.getMeasurements(request)
             }
 
             call.respondOutputStream(contentType = ContentType.Application.Json) {
-                transaction {
-                    processor.writeToStream(this@respondOutputStream)
-                }
+                processor.writeToStream(this@respondOutputStream)
             }
         }
     }

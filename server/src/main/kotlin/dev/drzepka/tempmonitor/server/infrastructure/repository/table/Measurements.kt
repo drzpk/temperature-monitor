@@ -1,10 +1,10 @@
-package dev.drzepka.tempmonitor.server.domain.entity.table
+package dev.drzepka.tempmonitor.server.infrastructure.repository.table
 
 import org.jetbrains.exposed.dao.id.IdTable
 import org.jetbrains.exposed.sql.`java-time`.timestamp
 import java.time.Instant
 
-object MeasurementsTable : IdTable<Instant>("measurements") {
+object Measurements : IdTable<Instant>("measurements") {
     override val id = timestamp("time").entityId()
     val deviceId = integer("device_id")
     val temperature = decimal("temperature", 4, 2)

@@ -1,7 +1,7 @@
 package dev.drzepka.tempmonitor.server.presentation
 
-import dev.drzepka.tempmonitor.server.domain.dto.CreateDeviceRequest
-import dev.drzepka.tempmonitor.server.domain.service.DeviceService
+import dev.drzepka.tempmonitor.server.application.dto.device.CreateDeviceRequest
+import dev.drzepka.tempmonitor.server.application.service.DeviceService
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.request.*
