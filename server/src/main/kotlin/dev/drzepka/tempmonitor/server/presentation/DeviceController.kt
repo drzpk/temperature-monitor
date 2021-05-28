@@ -1,6 +1,7 @@
 package dev.drzepka.tempmonitor.server.presentation
 
 import dev.drzepka.tempmonitor.server.application.dto.device.CreateDeviceRequest
+import dev.drzepka.tempmonitor.server.application.dto.device.UpdateDeviceRequest
 import dev.drzepka.tempmonitor.server.application.service.DeviceService
 import io.ktor.application.*
 import io.ktor.http.*
@@ -17,11 +18,11 @@ fun Route.deviceController() {
     route("/devices") {
         post("") {
             val request = call.receive<CreateDeviceRequest>()
-            val dto = transaction {
+            val resource = transaction {
                 deviceService.createDevice(request)
             }
 
-            call.respond(dto)
+            call.respond(resource)
         }
 
         get("") {
@@ -34,11 +35,23 @@ fun Route.deviceController() {
 
         get("/{id}") {
             val deviceId = call.parameters["id"]!!.toInt()
-            val dto = transaction {
+            val resource = transaction {
                 deviceService.getDevice(deviceId)
             }
 
-            call.respond(dto)
+            call.respond(resource)
+        }
+
+        patch("/{id}") {
+            val deviceId = call.parameters["id"]!!.toInt()
+            val request = call.receive<UpdateDeviceRequest>()
+            request.id = deviceId
+
+            val resource = transaction {
+                deviceService.updateDevice(request)
+            }
+
+            call.respond(resource)
         }
 
         delete("/{id}") {

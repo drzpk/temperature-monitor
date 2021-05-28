@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import VueRouter, {RouteConfig} from 'vue-router'
 import Devices from "@/views/Devices.vue";
-import EditDevice from "@/views/EditDevice.vue";
+import EditDevice from "@/views/settings/EditDevice.vue";
 import DeviceDetails from "@/views/details/DeviceDetails.vue";
+import Settings from "@/views/settings/Settings.vue";
 
 Vue.use(VueRouter);
 
@@ -26,6 +27,10 @@ const routes: Array<RouteConfig> = [
     {
         path: '/devices/:id/details',
         component: DeviceDetails
+    },
+    {
+        path: '/settings',
+        component: Settings
     }
 ];
 

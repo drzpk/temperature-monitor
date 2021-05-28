@@ -1,5 +1,5 @@
 import {Module} from "vuex";
-import {Device} from "@/models/device";
+import {DeviceModel} from "@/models/device.model";
 
 export interface ChartRange {
     startDate: Date;
@@ -7,7 +7,7 @@ export interface ChartRange {
 }
 
 export interface ChartsState {
-    activeDevice: Device | null;
+    activeDevice: DeviceModel | null;
     chartRange: ChartRange | null;
 }
 
@@ -19,7 +19,7 @@ const module: Module<ChartsState, unknown> = {
     },
     getters: {},
     mutations: {
-        setActiveDevice(state: ChartsState, device: Device | null) {
+        setActiveDevice(state: ChartsState, device: DeviceModel | null) {
             state.activeDevice = device;
         },
         updateChartRange(state: ChartsState, newRange: ChartRange) {

@@ -71,7 +71,8 @@
     import {Component, Vue, Watch} from "vue-property-decorator";
     import {Validation, validationMixin} from "vuelidate";
     import {maxLength, required} from "vuelidate/lib/validators";
-    import {Device} from "@/models/device";
+    import {DeviceModel} from "@/models/device.model";
+    import DateService from "@/services/Date.service";
 
     @Component({
         mixins: [
@@ -91,7 +92,7 @@
         }
     })
     export default class EditDevice extends Vue {
-        model: Device = {
+        model: DeviceModel = {
             id: -1,
             name: "",
             description: "",
@@ -104,12 +105,12 @@
         }
 
         get newDeviceMode(): boolean {
-            return this.deviceId === undefined;
+            return this.deviceId === null;
         }
 
-        get deviceId(): number | undefined {
+        get deviceId(): number | null {
             const idString = this.$route.params["id"];
-            return idString ? parseInt(idString) : undefined;
+            return idString ? parseInt(idString) : null;
         }
 
         get showLoggerHelp(): boolean {
@@ -150,20 +151,19 @@
         }
 
         formatDate(value: number): string {
-            const dateObj = new Date(value);
-            const date = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, "0")}-${dateObj.getDate().toString().padStart(2, "0")}`;
-            const time = `${dateObj.getHours().toString().padStart(2, "0")}:${dateObj.getMinutes().toString().padStart(2, "0")}`;
-            return `${date} ${time}`;
+            return DateService.formatDate(value);
         }
 
-        private onComponentLoaded() {
+        private onComponentLoaded(): void {
             if (!this.newDeviceMode) {
-                this.$store.dispatch("getDeviceById", this.deviceId).then((device: Device) => {
+                this.$store.dispatch("devices/setCurrentDevice", this.deviceId).then((device: DeviceModel) => {
                     this.model.id = device.id;
                     this.model.name = device.name;
                     this.model.description = device.description;
                     this.model.createdAt = device.createdAt;
                 });
+            } else {
+                this.$store.dispatch("devices/setCurrentDevice", null);
             }
         }
 
@@ -178,15 +178,13 @@
         }
 
         private createDevice() {
-            this.$store.dispatch("addDevice", this.model).then((deviceId) => {
-                this.$router.push({path: `/devices/${deviceId}/edit`, query: {"show-logger-help": ""}});
+            this.$store.dispatch("devices/addDevice", this.model).then((device) => {
+                this.$router.push({path: `/devices/${device.id}/edit`, query: {"show-logger-help": ""}});
             });
         }
 
         private updateDevice() {
-            this.$store.dispatch("updateDevice", this.model).then(() => {
-                //
-            });
+            this.$store.dispatch("devices/updateDevice", this.model);
         }
     }
 </script>

@@ -8,7 +8,7 @@
                 </b-col>
                 <b-col cols="6" sm="5" md="4" xl="5">
                     <div style="width: 100%; text-align: right">
-                        <b-button @click="newDevice">New device</b-button>
+                        <b-button @click="settings">Settings</b-button>
                     </div>
                 </b-col>
             </b-row>
@@ -28,7 +28,7 @@
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
     import DeviceSummaryPanel from "@/views/summary/DeviceSummaryPanel.vue";
-    import {Device} from "@/models/device";
+    import {DeviceModel} from "@/models/device.model";
 
     @Component({
         components: {
@@ -41,12 +41,12 @@
             this.$store.commit("charts/setActiveDevice", null);
         }
 
-        newDevice() {
-            this.$router.push("/devices/add");
+        settings() {
+            this.$router.push("/settings");
         }
 
         goToDevice(id: number) {
-            this.$store.dispatch("getDeviceById", id).then((device: Device) => {
+            this.$store.dispatch("getDeviceById", id).then((device: DeviceModel) => {
                 this.$store.commit("charts/setActiveDevice", device);
                 this.$router.push(`/devices/${id}/details`);
             });

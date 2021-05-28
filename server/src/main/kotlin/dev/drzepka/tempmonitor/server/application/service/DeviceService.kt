@@ -3,6 +3,7 @@ package dev.drzepka.tempmonitor.server.application.service
 import dev.drzepka.tempmonitor.server.application.ValidationErrors
 import dev.drzepka.tempmonitor.server.application.dto.device.CreateDeviceRequest
 import dev.drzepka.tempmonitor.server.application.dto.device.DeviceResource
+import dev.drzepka.tempmonitor.server.application.dto.device.UpdateDeviceRequest
 import dev.drzepka.tempmonitor.server.domain.entity.Device
 import dev.drzepka.tempmonitor.server.domain.exception.NotFoundException
 import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
@@ -20,7 +21,7 @@ class DeviceService(
     private val log by Logger()
 
     fun getDevices(): Collection<DeviceResource> {
-        return deviceRepository.findAll()
+        return deviceRepository.findAll(active = true)
             .map {
                 val lastMeasurement = measurementRepository.findLastForDevice(it.id!!)
                 DeviceResource.fromEntity(it, lastMeasurement)
@@ -44,6 +45,21 @@ class DeviceService(
         return DeviceResource.fromEntity(device)
     }
 
+    fun updateDevice(request: UpdateDeviceRequest): DeviceResource {
+        validateUpdateDevice(request)
+
+        val device =
+            deviceRepository.findById(request.id) ?: throw NotFoundException("Device ${request.id} wasn't found")
+
+        request.name?.let { device.name = it }
+        request.description?.let { device.description = it }
+
+        deviceRepository.save(device)
+
+        log.info("Updated device {}", device.id)
+        return DeviceResource.fromEntity(device)
+    }
+
     fun getDevice(deviceId: Int): DeviceResource {
         val device = getDeviceEntity(deviceId)
         return DeviceResource.fromEntity(device)
@@ -57,6 +73,22 @@ class DeviceService(
     }
 
     private fun validateCreateDevice(request: CreateDeviceRequest) {
+        val validation = ValidationErrors()
+        if (request.name != null && (request.name!!.isEmpty() || request.name!!.length > 64))
+            validation.addFieldError("name", "Name must have length between 1 and 64 characters.")
+        if (request.description != null && (request.description!!.isEmpty() || request.description!!.length > 256))
+            validation.addFieldError("description", "Description must have length between 1 and 256 characters")
+
+        if (request.name != null) {
+            val found = deviceRepository.findByNameAndActive(request.name!!, true) != null
+            if (found)
+                validation.addObjectError("Device with name \"${request.name!!}\" already exists.")
+        }
+
+        validation.verify()
+    }
+
+    private fun validateUpdateDevice(request: UpdateDeviceRequest) {
         val validation = ValidationErrors()
         if (request.name == null || request.name!!.isEmpty() || request.name!!.length > 64)
             validation.addFieldError("name", "Name must have length between 1 and 64 characters.")

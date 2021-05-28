@@ -54,6 +54,7 @@ class ExposedDeviceRepository : DeviceRepository {
             id = row[Devices.id].value
             name = row[Devices.name]
             description = row[Devices.description]
+            createdAt = row[Devices.createdAt]
             active = row[Devices.active]
         }
     }

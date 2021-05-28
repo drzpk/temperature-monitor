@@ -19,7 +19,8 @@ fun Application.temperatureMonitorKoinModule(): Module = module {
     single { MeasurementService(get(), get(), get()) }
 
     // Infrastructure
-    single { DatabaseInitializer(environment.config) }
+    val databaseInitializer = DatabaseInitializer(environment.config)
+    single { databaseInitializer }
     single { ConfigurationProviderService(environment.config) }
 
     single<DeviceRepository> { ExposedDeviceRepository() }
