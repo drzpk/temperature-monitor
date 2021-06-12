@@ -10,8 +10,8 @@ buildscript {
 
 plugins {
     application
-    kotlin("jvm") version "1.4.30"
-    kotlin("plugin.allopen") version "1.4.30"
+    kotlin("jvm")
+    kotlin("plugin.allopen")
     id("koin")
 }
 

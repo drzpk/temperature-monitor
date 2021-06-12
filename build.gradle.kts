@@ -1,3 +1,9 @@
+plugins {
+    kotlin("jvm") version "1.4.30" apply false
+    kotlin("plugin.allopen") version "1.4.30" apply false
+}
+
+
 allprojects {
     group = "dev.drzepka.tempmonitor"
     version = "1.0.0-SNAPSHOT"
