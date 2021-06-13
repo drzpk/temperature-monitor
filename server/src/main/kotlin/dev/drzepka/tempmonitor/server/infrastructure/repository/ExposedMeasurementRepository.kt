@@ -6,7 +6,10 @@ import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
 import dev.drzepka.tempmonitor.server.domain.repository.MeasurementRepository
 import dev.drzepka.tempmonitor.server.infrastructure.repository.table.Measurements
 import dev.drzepka.tempmonitor.server.infrastructure.repository.util.timeRangeQuery
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.UpdateBuilder
 
 class ExposedMeasurementRepository(private val deviceRepository: DeviceRepository) : MeasurementRepository {
@@ -28,14 +31,8 @@ class ExposedMeasurementRepository(private val deviceRepository: DeviceRepositor
     }
 
     override fun save(measurement: Measurement) {
-        if (measurement.isStored()) {
-            Measurements.update({ Measurements.id eq measurement.id }) {
-                entityToRow(measurement, it)
-            }
-        } else {
-            Measurements.insert {
-                entityToRow(measurement, it)
-            }
+        Measurements.insert {
+            entityToRow(measurement, it)
         }
     }
 

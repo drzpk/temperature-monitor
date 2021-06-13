@@ -18,7 +18,7 @@ fun Application.temperatureMonitorKoinModule(): Module = module {
     // Application
     single { DeviceService(get(), get()) }
     single { MeasurementService(get(), get(), get()) }
-    single { LoggerService(get(), get()) }
+    single { LoggerService(get(), get(), get()) }
     single { PasswordGeneratorService(get()) }
 
     // Infrastructure

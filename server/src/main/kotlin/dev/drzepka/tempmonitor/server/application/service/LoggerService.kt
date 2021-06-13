@@ -11,7 +11,8 @@ import java.time.Instant
 
 class LoggerService(
     private val loggerRepository: LoggerRepository,
-    private val passwordGeneratorService: PasswordGeneratorService
+    private val passwordGeneratorService: PasswordGeneratorService,
+    private val hashService: HashService
 ) {
 
     private val log by dev.drzepka.tempmonitor.server.domain.util.Logger()
@@ -31,6 +32,19 @@ class LoggerService(
         if (found == null)
             throw NotFoundException("Logger $id wasn't found")
         return found
+    }
+
+    fun getLogger(id: Int, password: String): Logger? {
+        val found = loggerRepository.findById(id)
+        if (found == null || !found.active)
+            return null
+
+        return if (!hashService.compareHashes(found.password, password)) {
+            log.warn("Found logger {} but passwords don't match", id)
+            null
+        } else {
+            found
+        }
     }
 
     fun createLogger(request: CreateLoggerRequest): LoggerResource {

@@ -2,6 +2,7 @@ package dev.drzepka.tempmonitor.server
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import dev.drzepka.tempmonitor.server.application.configuration.setupRouting
+import dev.drzepka.tempmonitor.server.application.configuration.setupSecurity
 import dev.drzepka.tempmonitor.server.application.configuration.setupStatusPages
 import dev.drzepka.tempmonitor.server.application.configuration.temperatureMonitorKoinModule
 import io.ktor.application.*
@@ -25,6 +26,7 @@ fun Application.temperatureMonitorServer() {
         modules(temperatureMonitorKoinModule())
     }
 
+    setupSecurity()
     setupRouting()
     setupStatusPages()
 }
