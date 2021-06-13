@@ -69,12 +69,6 @@
                             </b-button>
                         </div>
                     </b-form>
-
-                    <br>
-                    <b-alert variant="success" :show="showLoggerHelp">
-                        New device has been created. It can be now connected to a physical device in
-                        the data logger. Use value <b>{{deviceId}}</b> as the device id.
-                    </b-alert>
                 </b-col>
             </b-row>
         </b-container>
@@ -130,10 +124,6 @@
         get deviceId(): number | null {
             const idString = this.$route.params["id"];
             return idString ? parseInt(idString) : null;
-        }
-
-        get showLoggerHelp(): boolean {
-            return !this.newDeviceMode && this.$route.query["show-logger-help"] != null;
         }
 
         mounted(): void {
@@ -199,7 +189,7 @@
 
         private createDevice() {
             this.$store.dispatch("devices/addDevice", this.model).then((device) => {
-                this.$router.push({path: `/devices/${device.id}/edit`, query: {"show-logger-help": ""}});
+                this.$router.push(`/devices/${device.id}/edit`);
             });
         }
 
