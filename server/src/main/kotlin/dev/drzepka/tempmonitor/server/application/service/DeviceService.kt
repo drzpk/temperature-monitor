@@ -81,7 +81,7 @@ class DeviceService(
         val validation = ValidationErrors()
         if (request.name == null || request.name!!.isEmpty() || request.name!!.length > 64)
             validation.addFieldError("name", "Name must have length between 1 and 64 characters.")
-        if (request.description == null && request.description!!.isEmpty() || request.description!!.length > 256)
+        if (request.description == null || request.description!!.isEmpty() || request.description!!.length > 256)
             validation.addFieldError("description", "Description must have length between 1 and 256 characters.")
         if (request.mac == null || request.mac!!.isBlank() || request.mac!!.length > 64)
             validation.addFieldError("mac", "Mac must have length between 1 and 64 characters.")
