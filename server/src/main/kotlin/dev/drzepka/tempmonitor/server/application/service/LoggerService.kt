@@ -21,6 +21,18 @@ class LoggerService(
             .map { LoggerResource.fromEntity(it) }
     }
 
+    fun getLogger(id: Int): Logger {
+        var found = loggerRepository.findById(id)
+        if (found != null && !found.active) {
+            log.warn("Found logger {} but it isn't active", found.id)
+            found = null
+        }
+
+        if (found == null)
+            throw NotFoundException("Logger $id wasn't found")
+        return found
+    }
+
     fun createLogger(request: CreateLoggerRequest): LoggerResource {
         validateCreateLogger(request)
 
@@ -95,18 +107,6 @@ class LoggerService(
             validation.addFieldError("description", "Logger description must have length between 1 and 256 characters.")
 
         validation.verify()
-    }
-
-    private fun getLogger(id: Int): Logger {
-        var found = loggerRepository.findById(id)
-        if (found != null && !found.active) {
-            log.warn("Found logger {} but it isn't active", found.id)
-            found = null
-        }
-
-        if (found == null)
-            throw NotFoundException("Logger $id wasn't found")
-        return found
     }
 
     private fun loggerWithNameExists(name: String): Boolean {

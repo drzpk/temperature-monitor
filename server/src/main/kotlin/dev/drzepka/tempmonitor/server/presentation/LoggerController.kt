@@ -23,6 +23,16 @@ fun Route.loggerController() {
             call.respond(loggers)
         }
 
+        get("/{loggerId}") {
+            val loggerId = call.parameters["loggerId"]!!.toInt()
+
+            val resource = transaction {
+                loggerService.getLogger(loggerId)
+            }
+
+            call.respond(resource)
+        }
+
         post("") {
             val request = call.receive<CreateLoggerRequest>()
 

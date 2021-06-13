@@ -7,13 +7,19 @@
                     <b-row>
                         <b-col>
                             <h2>Settings</h2>
-                            <br>
                         </b-col>
                     </b-row>
                     <b-row>
                         <b-col>
                             <b-card title="Devices">
                                 <SettingsDevices/>
+                            </b-card>
+                        </b-col>
+                    </b-row>
+                    <b-row>
+                        <b-col>
+                            <b-card title="Loggers">
+                                <SettingsLoggers/>
                             </b-card>
                         </b-col>
                     </b-row>
@@ -26,15 +32,18 @@
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
     import SettingsDevices from "@/views/settings/SettingsDevices.vue";
+    import SettingsLoggers from "@/views/settings/SettingsLoggers.vue";
 
     @Component({
-        components: {SettingsDevices}
+        components: {SettingsLoggers, SettingsDevices}
     })
     export default class Settings extends Vue {
 
     }
 </script>
 
-<style lang="scss">
-
+<style lang="scss" scoped>
+    .card {
+        margin: 1em;
+    }
 </style>

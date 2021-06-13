@@ -1,5 +1,6 @@
 import axios from "axios";
 import {DeviceModel, UpdateDeviceRequest} from "@/models/device.model";
+import {CreateLoggerRequest, LoggerModel, UpdateLoggerRequest} from "@/models/logger.model";
 
 function responseErrorHandler(error: Error): never {
     // nothing here yet
@@ -33,6 +34,41 @@ class ApiService {
 
     deleteDevice(deviceId: number): Promise<unknown> {
         return axios.delete<void>(`/api/devices/${deviceId}`)
+            .catch(responseErrorHandler);
+    }
+
+    getLoggers(): Promise<LoggerModel[]> {
+        return axios.get<LoggerModel[]>("/api/loggers")
+            .then(response => response.data)
+            .catch(responseErrorHandler);
+    }
+
+    getLogger(loggerId: number): Promise<LoggerModel> {
+        return axios.get<LoggerModel>(`/api/loggers/${loggerId}`)
+            .then(response => response.data)
+            .catch(responseErrorHandler);
+    }
+
+    createLogger(request: CreateLoggerRequest): Promise<LoggerModel> {
+        return axios.post<LoggerModel>("/api/loggers", request)
+            .then(response => response.data)
+            .catch(responseErrorHandler);
+    }
+
+    updateLogger(request: UpdateLoggerRequest): Promise<LoggerModel> {
+        return axios.patch(`/api/loggers/${request.id}`, request)
+            .then(response => response.data)
+            .catch(responseErrorHandler);
+    }
+
+    deleteLogger(loggerId: number): Promise<any> {
+        return axios.delete(`/api/loggers/${loggerId}`)
+            .catch(responseErrorHandler);
+    }
+
+    resetLoggerPassword(loggerId: number): Promise<LoggerModel> {
+        return axios.delete<LoggerModel>(`/api/loggers/${loggerId}/password`)
+            .then(response => response.data)
             .catch(responseErrorHandler);
     }
 }

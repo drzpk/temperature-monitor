@@ -4,6 +4,7 @@ import Devices from "@/views/Devices.vue";
 import EditDevice from "@/views/settings/EditDevice.vue";
 import DeviceDetails from "@/views/details/DeviceDetails.vue";
 import Settings from "@/views/settings/Settings.vue";
+import EditLogger from "@/views/settings/EditLogger.vue";
 
 Vue.use(VueRouter);
 
@@ -27,6 +28,14 @@ const routes: Array<RouteConfig> = [
     {
         path: '/devices/:id/details',
         component: DeviceDetails
+    },
+    {
+        path: '/loggers/add',
+        component: EditLogger
+    },
+    {
+        path: '/loggers/:id/edit',
+        component: EditLogger
     },
     {
         path: '/settings',
