@@ -9,6 +9,7 @@ class DeviceResource {
     var id = 0
     var name = ""
     var description = ""
+    var mac = ""
     var createdAt: Instant = Instant.now()
     var lastMeasurement: MeasurementResource? = null
 
@@ -17,6 +18,7 @@ class DeviceResource {
             id = device.id!!
             name = device.name
             description = device.description
+            mac = device.mac
             createdAt = device.createdAt
             this.lastMeasurement = lastMeasurement?.let {
                 MeasurementResource.fromEntity(

@@ -1,7 +1,8 @@
 export interface DeviceModel {
     id: number;
     name: string;
-    description: string
+    description: string;
+    mac: string;
     createdAt: number;
 }
 

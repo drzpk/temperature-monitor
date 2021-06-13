@@ -46,7 +46,8 @@ const module: Module<DevicesState, unknown> = {
         updateDevice(context, device: DeviceModel): Promise<DeviceModel> {
             const request = {
                 name: device.name,
-                description: device.description
+                description: device.description,
+                mac: device.mac
             };
             return ApiService.updateDevice(device.id, request).then((device) => {
                 return context.dispatch("refreshDevices").then(() => {

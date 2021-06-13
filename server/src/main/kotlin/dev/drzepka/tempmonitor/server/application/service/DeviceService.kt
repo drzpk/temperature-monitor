@@ -35,6 +35,7 @@ class DeviceService(
         val device = Device().apply {
             name = request.name!!
             description = request.description!!
+            mac = request.mac!!
             createdAt = Instant.now()
             active = true
         }
@@ -51,8 +52,12 @@ class DeviceService(
         val device =
             deviceRepository.findById(request.id) ?: throw NotFoundException("Device ${request.id} wasn't found")
 
+        if (request.name != null && request.name != device.name && deviceWithNameExists(request.name!!))
+            throw IllegalStateException("Device with name \"${request.name!!}\" already exists.")
+
         request.name?.let { device.name = it }
         request.description?.let { device.description = it }
+        request.mac?.let { device.mac = it }
 
         deviceRepository.save(device)
 
@@ -74,34 +79,33 @@ class DeviceService(
 
     private fun validateCreateDevice(request: CreateDeviceRequest) {
         val validation = ValidationErrors()
-        if (request.name != null && (request.name!!.isEmpty() || request.name!!.length > 64))
+        if (request.name == null || request.name!!.isEmpty() || request.name!!.length > 64)
             validation.addFieldError("name", "Name must have length between 1 and 64 characters.")
-        if (request.description != null && (request.description!!.isEmpty() || request.description!!.length > 256))
-            validation.addFieldError("description", "Description must have length between 1 and 256 characters")
+        if (request.description == null && request.description!!.isEmpty() || request.description!!.length > 256)
+            validation.addFieldError("description", "Description must have length between 1 and 256 characters.")
+        if (request.mac == null || request.mac!!.isBlank() || request.mac!!.length > 64)
+            validation.addFieldError("mac", "Mac must have length between 1 and 64 characters.")
 
-        if (request.name != null) {
-            val found = deviceRepository.findByNameAndActive(request.name!!, true) != null
-            if (found)
-                validation.addObjectError("Device with name \"${request.name!!}\" already exists.")
-        }
+        if (request.name != null && deviceWithNameExists(request.name!!))
+            validation.addObjectError("Device with name \"${request.name!!}\" already exists.")
 
         validation.verify()
     }
 
     private fun validateUpdateDevice(request: UpdateDeviceRequest) {
         val validation = ValidationErrors()
-        if (request.name == null || request.name!!.isEmpty() || request.name!!.length > 64)
+        if (request.name != null && (request.name!!.isEmpty() || request.name!!.length > 64))
             validation.addFieldError("name", "Name must have length between 1 and 64 characters.")
-        if (request.description == null || request.description!!.isEmpty() || request.description!!.length > 256)
+        if (request.description != null && (request.description!!.isEmpty() || request.description!!.length > 256))
             validation.addFieldError("description", "Description must have length between 1 and 256 characters")
-
-        if (request.name != null) {
-            val found = deviceRepository.findByNameAndActive(request.name!!, true) != null
-            if (found)
-                validation.addObjectError("Device with name \"${request.name!!}\" already exists.")
-        }
+        if (request.mac != null && (request.mac!!.isBlank() || request.mac!!.length > 64))
+            validation.addFieldError("mac", "Mac must have length between 1 and 64 characters.")
 
         validation.verify()
+    }
+
+    private fun deviceWithNameExists(name: String): Boolean {
+        return deviceRepository.findByNameAndActive(name, true) != null
     }
 
     private fun getDeviceEntity(deviceId: Int): Device {

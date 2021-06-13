@@ -46,6 +46,8 @@ class ExposedDeviceRepository : DeviceRepository {
     private fun entityToRow(entity: Device, stmt: UpdateBuilder<Int>) {
         stmt[Devices.name] = entity.name
         stmt[Devices.description] = entity.description
+        stmt[Devices.mac] = entity.mac
+        stmt[Devices.createdAt] = entity.createdAt
         stmt[Devices.active] = entity.active
     }
 
@@ -54,6 +56,7 @@ class ExposedDeviceRepository : DeviceRepository {
             id = row[Devices.id].value
             name = row[Devices.name]
             description = row[Devices.description]
+            mac = row[Devices.mac]
             createdAt = row[Devices.createdAt]
             active = row[Devices.active]
         }

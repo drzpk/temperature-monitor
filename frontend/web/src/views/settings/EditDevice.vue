@@ -48,6 +48,20 @@
                             </b-form-invalid-feedback>
                         </b-form-group>
 
+                        <b-form-group label-for="device-mac" label="Mac address" label-cols="3">
+                            <b-form-input id="device-mac" name="mac" v-model="model.mac"
+                                          :disabled="!editMode"
+                                          :state="validateState('model.mac')"
+                                          @input="resetState('model.mac')"/>
+
+                            <b-form-invalid-feedback v-if="!$v.model.mac.required">
+                                Device description is required.
+                            </b-form-invalid-feedback>
+                            <b-form-invalid-feedback v-if="!$v.model.mac.maxLength">
+                                Maximum field length is {{$v.model.mac.$params.maxLength.max}}.
+                            </b-form-invalid-feedback>
+                        </b-form-group>
+
                         <div class="button-wrapper">
                             <b-button :disabled="formSent || !editMode" @click="sendForm">
                                 <span v-if="newDeviceMode">Create</span>
@@ -87,6 +101,10 @@
                 description: {
                     required,
                     maxLength: maxLength(256)
+                },
+                mac: {
+                    required,
+                    maxLength: maxLength(64)
                 }
             }
         }
@@ -96,6 +114,7 @@
             id: -1,
             name: "",
             description: "",
+            mac: "",
             createdAt: -1
         };
         formSent = false;
@@ -160,6 +179,7 @@
                     this.model.id = device.id;
                     this.model.name = device.name;
                     this.model.description = device.description;
+                    this.model.mac = device.mac;
                     this.model.createdAt = device.createdAt;
                 });
             } else {
