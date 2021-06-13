@@ -57,7 +57,6 @@ class DeviceService(
 
         request.name?.let { device.name = it }
         request.description?.let { device.description = it }
-        request.mac?.let { device.mac = it }
 
         deviceRepository.save(device)
 
@@ -98,8 +97,6 @@ class DeviceService(
             validation.addFieldError("name", "Name must have length between 1 and 64 characters.")
         if (request.description != null && (request.description!!.isEmpty() || request.description!!.length > 256))
             validation.addFieldError("description", "Description must have length between 1 and 256 characters")
-        if (request.mac != null && (request.mac!!.isBlank() || request.mac!!.length > 64))
-            validation.addFieldError("mac", "Mac must have length between 1 and 64 characters.")
 
         validation.verify()
     }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import {DeviceModel, UpdateDeviceRequest} from "@/models/device.model";
+import {AddDeviceRequest, DeviceModel, UpdateDeviceRequest} from "@/models/device.model";
 import {CreateLoggerRequest, LoggerModel, UpdateLoggerRequest} from "@/models/logger.model";
 
 function responseErrorHandler(error: Error): never {
@@ -20,7 +20,7 @@ class ApiService {
             .catch(responseErrorHandler);
     }
 
-    addDevice(request: UpdateDeviceRequest): Promise<DeviceModel> {
+    addDevice(request: AddDeviceRequest): Promise<DeviceModel> {
         return axios.post<DeviceModel>("/api/devices", request)
             .then(response => response.data)
             .catch(responseErrorHandler);

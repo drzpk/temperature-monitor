@@ -20,6 +20,20 @@
                                           :value="formatDate(model.createdAt)" readonly/>
                         </b-form-group>
 
+                        <b-form-group label-for="device-mac" label="Mac address" label-cols="3">
+                            <b-form-input id="device-mac" name="mac" v-model="model.mac"
+                                          :disabled="!editMode || !newDeviceMode"
+                                          :state="validateState('model.mac')"
+                                          @input="resetState('model.mac')"/>
+
+                            <b-form-invalid-feedback v-if="!$v.model.mac.required">
+                                Device description is required.
+                            </b-form-invalid-feedback>
+                            <b-form-invalid-feedback v-if="!$v.model.mac.maxLength">
+                                Maximum field length is {{$v.model.mac.$params.maxLength.max}}.
+                            </b-form-invalid-feedback>
+                        </b-form-group>
+
                         <b-form-group label-for="device-name" label="Name" label-cols="3">
                             <b-form-input id="device-name" name="name" v-model="model.name"
                                           :disabled="!editMode"
@@ -45,20 +59,6 @@
                             </b-form-invalid-feedback>
                             <b-form-invalid-feedback v-if="!$v.model.description.maxLength">
                                 Maximum field length is {{$v.model.description.$params.maxLength.max}}.
-                            </b-form-invalid-feedback>
-                        </b-form-group>
-
-                        <b-form-group label-for="device-mac" label="Mac address" label-cols="3">
-                            <b-form-input id="device-mac" name="mac" v-model="model.mac"
-                                          :disabled="!editMode"
-                                          :state="validateState('model.mac')"
-                                          @input="resetState('model.mac')"/>
-
-                            <b-form-invalid-feedback v-if="!$v.model.mac.required">
-                                Device description is required.
-                            </b-form-invalid-feedback>
-                            <b-form-invalid-feedback v-if="!$v.model.mac.maxLength">
-                                Maximum field length is {{$v.model.mac.$params.maxLength.max}}.
                             </b-form-invalid-feedback>
                         </b-form-group>
 
