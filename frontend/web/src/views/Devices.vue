@@ -28,7 +28,6 @@
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
     import DeviceSummaryPanel from "@/views/summary/DeviceSummaryPanel.vue";
-    import {DeviceModel} from "@/models/device.model";
 
     @Component({
         components: {
@@ -46,10 +45,9 @@
         }
 
         goToDevice(id: number) {
-            this.$store.dispatch("getDeviceById", id).then((device: DeviceModel) => {
-                this.$store.commit("charts/setActiveDevice", device);
+            this.$store.dispatch("devices/setCurrentDevice", id).then(() => {
                 this.$router.push(`/devices/${id}/details`);
-            });
+            })
         }
     }
 </script>

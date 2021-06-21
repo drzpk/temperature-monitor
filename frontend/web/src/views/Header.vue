@@ -23,7 +23,7 @@
 <style lang="scss">
     header {
         height: 4em;
-        background-color: powderblue;
+        background-color: #5D93CF;
         text-align: center;
         margin-bottom: 1.5em;
 

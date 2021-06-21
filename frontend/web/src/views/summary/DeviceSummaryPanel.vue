@@ -34,19 +34,24 @@
         width: 100%;
         height: 10em;
         border: $border-definition;
-        background-color: #f1f1f1;
+        background-image: linear-gradient(169deg, #618fd4c9, #54D0AC);
     }
 
     .panel-left {
         position: relative;
         display: inline-block;
         overflow: hidden;
-        width: 62%;
+        width: 72%;
         height: 100%;
 
         .panel-left-text {
             position: absolute;
             z-index: 2;
+            margin-top: 0.7em;
+            margin-left: 1.1em;
+            padding: 0.5em 2.5em 0.5em 0.5em;
+            background-color: #ffffffc4;
+            box-shadow: 0 0 11px 5px #ffffffc4;
         }
 
         .device-name {
@@ -69,7 +74,7 @@
     .panel-right {
         display: inline-block;
         border-left: $border-definition;
-        width: 38%;
+        width: 28%;
         height: 100%;
     }
 </style>

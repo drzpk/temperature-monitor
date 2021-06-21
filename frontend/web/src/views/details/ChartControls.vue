@@ -141,7 +141,7 @@
                 startDate: from,
                 endDate: to
             };
-            this.$store.commit("updateChartRange", range);
+            this.$store.commit("charts/updateChartRange", range);
         }
     }
 </script>

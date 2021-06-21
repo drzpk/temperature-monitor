@@ -98,15 +98,14 @@
         > svg {
             width: 100%;
             height: 100%;
-            background-color: #ffe0a4;
         }
 
         .bar-bg {
-            fill: #c3c3c3;
+            fill: #eeeeeea0;
         }
 
         .bar-fg {
-            fill: black;
+            fill: #313131;
         }
 
         .label {

@@ -4,29 +4,31 @@
         <b-container fluid>
             <b-row>
                 <b-col cols="10" lg="4" offset-lg="3">
-                    <h2 v-if="activeDevice">{{activeDevice.name}}</h2>
+                    <h2 v-if="currentDevice">{{currentDevice.name}}</h2>
                 </b-col>
             </b-row>
             <b-row>
                 <b-col cols="12" lg="6" offset-lg="3">
-                    <h3 v-if="activeDevice">{{activeDevice.description}}</h3>
+                    <h3 v-if="currentDevice">{{currentDevice.description}}</h3>
                 </b-col>
             </b-row>
             <br>
             <b-row>
                 <b-col cols="12" lg="6" offset-lg="3">
-                    Temperature chart
-                    <Chart/>
+                    <h5>Temperature chart</h5>
+                    <Chart color="#277554" unit=" °C"/>
                 </b-col>
             </b-row>
             <b-row>
                 <b-col cols="12" lg="6" offset-lg="3">
-                    Humidity chart
-                    <Chart/>
+                    <div style="margin-top: 2em;"></div>
+                    <h5>Humidity chart</h5>
+                    <Chart color="#AA5939" unit="%"/>
                 </b-col>
             </b-row>
             <b-row>
                 <b-col cols="12" lg="6" offset-lg="3">
+                    <div style="margin-top: 2em;"></div>
                     <ChartControls/>
                 </b-col>
             </b-row>
@@ -43,12 +45,19 @@
 
     @Component({
         components: {ChartControls, Chart},
-        computed: mapState("charts", [
-            "activeDevice"
+        computed: mapState("devices", [
+            "currentDevice"
         ])
     })
     export default class DeviceDetails extends Vue {
-        activeDevice!: DeviceModel;
+        currentDevice!: DeviceModel;
+
+        mounted(): void {
+            if (!this.currentDevice) {
+                const deviceId = parseInt(this.$route.params.id as string);
+                this.$store.dispatch("devices/setCurrentDevice", deviceId);
+            }
+        }
     }
 </script>
 

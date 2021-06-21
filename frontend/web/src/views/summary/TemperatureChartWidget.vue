@@ -65,7 +65,7 @@
             const maxTemperature = d3.max<test, number>(this.data, d => d.temperature);
 
             const x = d3.scaleLinear([0, this.data.length - 1], [0, viewboxSize[0]]);
-            const y = d3.scaleLinear([minTemperature as number, maxTemperature as number], [viewboxSize[1], 0]);
+            const y = d3.scaleLinear([minTemperature as number, maxTemperature as number], [viewboxSize[1], 10]);
 
             const d = d3.line<test>()
                 .curve(d3.curveMonotoneX)
@@ -90,12 +90,11 @@
     svg.temperature-chart-svg {
         width: 100%;
         height: 100%;
-        background-color: cornflowerblue;
 
         .line {
             fill: none;
-            stroke: #3fff7b;
-            stroke-width: 3;
+            stroke: #4a4a4a;
+            stroke-width: 8;
         }
     }
 </style>

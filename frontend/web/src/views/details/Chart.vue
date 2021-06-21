@@ -2,11 +2,14 @@
     <div class="device-chart">
         <!--suppress HtmlUnknownAttribute -->
         <svg></svg>
+        <div class="legend-popup">
+            {{legendText}}
+        </div>
     </div>
 </template>
 
 <script lang="ts">
-    import {Component, Vue} from "vue-property-decorator";
+    import {Component, Prop, Vue} from "vue-property-decorator";
     import * as d3 from "d3";
     import {Axis, ScaleLinear, ScaleTime, Selection} from "d3";
     import {Measurement, MeasurementData} from "@/models/data";
@@ -17,14 +20,27 @@
 
     @Component
     export default class Chart extends Vue {
+        @Prop({default: "black"})
+        color!: string;
+
+        @Prop({default: ""})
+        unit!: string;
+
+        legendText = "placeholder";
+
         private data!: MeasurementData;
 
+        private svgElement!: SVGSVGElement;
         private svg!: Selection<SVGSVGElement, unknown, null, undefined>;
         private path!: Selection<any, unknown, null, undefined>;
         private scaleX!: ScaleTime<number, number, never>;
         private scaleY!: ScaleLinear<number, number, never>;
         private axisX!: Axis<any>;
         private axisY!: Axis<any>;
+
+        private legendPopup!: Selection<any, unknown, null, undefined>;
+        private legendPopupHeight!: number;
+        private legendPoint!: SVGPoint;
 
         mounted(): void {
             const timedData: Array<Measurement> = [];
@@ -47,8 +63,8 @@
         }
 
         private initializeChart() {
-            const svgElement = this.$el.getElementsByTagName("svg")[0];
-            this.svg = d3.select(svgElement);
+            this.svgElement = this.$el.getElementsByTagName("svg")[0];
+            this.svg = d3.select(this.svgElement);
             this.svg.selectChildren().remove();
             this.svg.attr("viewBox", `0 0 ${CHART_VIEWBOX[0]} ${CHART_VIEWBOX[1]}`);
 
@@ -60,7 +76,8 @@
 
             this.path = this.svg.append("g")
                 .append("path")
-                .attr("class", "chart-path");
+                .attr("class", "chart-path")
+                .style("stroke", this.color);
 
             this.svg.append("g")
                 .attr("transform", `translate(0, ${CHART_VIEWBOX[1] - CHART_MARGINS[2]})`)
@@ -70,6 +87,11 @@
                 .attr("transform", `translate(${CHART_MARGINS[3]}, 0)`)
                 .attr("class", "axis-y");
 
+            const legendPopupElement = this.$el.getElementsByClassName("legend-popup")[0];
+            this.legendPopup = d3.select(legendPopupElement);
+            this.legendPopupHeight = legendPopupElement.getBoundingClientRect().height;
+            this.legendPoint = this.svgElement.createSVGPoint();
+
             this.initializeValueOverlay();
         }
 
@@ -77,13 +99,7 @@
             const overlayCircle = this.svg.append("g")
                 .append("circle")
                 .attr("class", "overlay-circle")
-                .attr("r", 8);
-
-            const overlayText = this.svg.append("g")
-                .append("text")
-                .attr("class", "overlay-text")
-                .attr("transform", "translate(10, 0)")
-                .text("abc");
+                .attr("r", 6);
 
             const bisector = d3.bisector<Measurement, Date>((d) => d.time).left;
             const onMouseMove = (e: MouseEvent) => {
@@ -98,20 +114,29 @@
                 overlayCircle
                     .attr("cx", x)
                     .attr("cy", y);
-                overlayText
-                    .attr("x", x)
-                    .attr("y", y)
-                    .html(measurement.value.toFixed(1));
+
+                this.legendPoint.x = x;
+                this.legendPoint.y = y;
+                const transformed = this.legendPoint.matrixTransform(this.svgElement.getScreenCTM() as any);
+
+                const rect = this.svg.node()!.getBoundingClientRect();
+                const popupLeft = transformed.x - rect.x + 15;
+                const popupTop = transformed.y - rect.y - this.legendPopupHeight / 2;
+                this.legendPopup
+                    .style("left", popupLeft + "px")
+                    .style("top", popupTop + "px");
+
+                this.legendText = `${measurement.value.toFixed(1)}${this.unit}`;
             };
 
             const onMouseEnter = () => {
               overlayCircle.style("opacity", 1);
-              overlayText.style("opacity", 1);
+              this.legendPopup.style("opacity", 1);
             };
 
             const onMouseExit = () => {
                 overlayCircle.style("opacity", 0);
-                overlayText.style("opacity", 0);
+                this.legendPopup.style("opacity", 0);
             };
 
             this.svg.append("rect")
@@ -157,12 +182,13 @@
 
 <style lang="scss">
     .device-chart {
+        position: relative;
+
         svg {
-            background-color: lavender;
+            background-color: #f9f9f9;
         }
 
         path.chart-path {
-            stroke: black;
             stroke-width: 1.2;
             fill: none;
         }
@@ -175,6 +201,20 @@
 
         .overlay-text {
             font-size: 0.9em;
+            background-color: white;
+        }
+
+        .legend-popup {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 0.5em 1em 0.5em 0.5em;
+            font-weight: bold;
+            white-space: nowrap;
+            color: white;
+            background-color: #2f2f2f;
+            border-radius: 5px;
+            pointer-events: none;
         }
     }
 </style>
