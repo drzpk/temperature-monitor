@@ -33,6 +33,7 @@ const module: Module<DevicesState, unknown> = {
 
         addDevice(context, device: DeviceModel): Promise<DeviceModel> {
             const request = {
+                mac: device.mac,
                 name: device.name,
                 description: device.description
             };

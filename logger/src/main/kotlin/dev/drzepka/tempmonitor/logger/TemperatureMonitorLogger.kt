@@ -1,17 +1,21 @@
 package dev.drzepka.tempmonitor.logger
 
-import dev.drzepka.tempmonitor.logger.bluetooth.BroadcastListener
-import dev.drzepka.tempmonitor.logger.bluetooth.bluetoothctl.BluetoothCtlBluetoothFacade
-import dev.drzepka.tempmonitor.logger.model.BluetoothServiceData
+import dev.drzepka.tempmonitor.logger.configuration.ConfigurationLoader
+import dev.drzepka.tempmonitor.logger.executor.RequestExecutor
+import dev.drzepka.tempmonitor.logger.queue.LoggerQueue
+import java.time.Duration
+import kotlin.concurrent.thread
 
 fun main() {
-    val facade = BluetoothCtlBluetoothFacade()
-    facade.addBroadcastListener(object : BroadcastListener {
-        override fun onDataReceived(data: BluetoothServiceData) {
-            System.out.println("data received")
-        }
+    ConfigurationLoader.loadConfiguration()
+    val executor = RequestExecutor(ConfigurationLoader.getConfiguration())
+
+    val manager = LoggerManager(executor, LoggerQueue(Duration.ofHours(24)))
+    val orchestrator = LoggerOrchestrator(manager)
+
+    Runtime.getRuntime().addShutdownHook(thread(start = false) {
+        orchestrator.stop()
     })
 
-    facade.startListening()
-    Thread.sleep(600_000)
+    orchestrator.start()
 }

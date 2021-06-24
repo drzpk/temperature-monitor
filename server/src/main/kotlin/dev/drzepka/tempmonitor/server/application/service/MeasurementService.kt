@@ -30,7 +30,8 @@ class MeasurementService(
         checkMeasurementNotAddedBeforeInterval(request.deviceId)
 
         val measurement = Measurement(device).apply {
-            id = Instant.now()
+            id = if (request.timestampOffset != null)
+                Instant.now().minusSeconds(request.timestampOffset!!) else Instant.now()
             temperature = request.temperature
             humidity = request.humidity
             batteryVoltage = request.batteryVoltage
