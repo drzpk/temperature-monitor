@@ -1,5 +1,6 @@
 package dev.drzepka.tempmonitor.server.presentation
 
+import dev.drzepka.tempmonitor.server.application.LoggerPrincipal
 import dev.drzepka.tempmonitor.server.application.configuration.MEASUREMENTS_AUTH
 import dev.drzepka.tempmonitor.server.application.dto.measurement.CreateMeasurementRequest
 import dev.drzepka.tempmonitor.server.application.dto.measurement.GetMeasurementsRequest
@@ -24,11 +25,12 @@ fun Route.measurementController() {
         authenticate(MEASUREMENTS_AUTH) {
             post {
                 val request = call.receive<CreateMeasurementRequest>()
-                transaction {
-                    measurementService.addMeasurement(request)
+                val principal = call.authentication.principal<LoggerPrincipal>()!!
+                val status = transaction {
+                    measurementService.addMeasurement(request, principal.logger)
                 }
 
-                call.respond(HttpStatusCode.Created)
+                call.respond(if (status) HttpStatusCode.Created else HttpStatusCode.OK)
             }
         }
 

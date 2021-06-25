@@ -9,6 +9,7 @@ import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
 import dev.drzepka.tempmonitor.server.domain.repository.MeasurementRepository
 import dev.drzepka.tempmonitor.server.domain.service.measurement.TestMeasurementDataGenerator
 import dev.drzepka.tempmonitor.server.domain.util.Logger
+import org.jetbrains.exposed.exceptions.ExposedSQLException
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -23,9 +24,16 @@ class MeasurementService(
     private val minimumCreationInterval =
         configurationProviderService.getInt("measurements.minimumCreationIntervalSeconds")
 
-    fun addMeasurement(request: CreateMeasurementRequest) {
+    fun addMeasurement(
+        request: CreateMeasurementRequest,
+        logger: dev.drzepka.tempmonitor.server.domain.entity.Logger
+    ): Boolean {
+
+        val lastMeasurement = measurementRepository.findLastForDevice(request.deviceId)
+        if (lastMeasurement != null)
+            checkMeasurementNotAddedBeforeInterval(lastMeasurement)
+
         val device = validateAddMeasurement(request)
-        checkMeasurementNotAddedBeforeInterval(request.deviceId)
 
         val measurement = Measurement(device).apply {
             id = if (request.timestampOffset != null)
@@ -34,10 +42,25 @@ class MeasurementService(
             humidity = request.humidity
             batteryVoltage = request.batteryVoltage
             batteryLevel = request.batteryLevel
+            loggerId = logger.id!!
         }
 
-        measurementRepository.save(measurement)
+        try {
+            measurementRepository.save(measurement)
+        } catch (e: Exception) {
+            if (isPrimaryKeyDuplicated(e)) {
+                log.debug(
+                    "Measurement {} from device {} has been already created by another logger",
+                    measurement.id, measurement.device.id
+                )
+                return false
+            } else {
+                throw e
+            }
+        }
+
         log.debug("Created measurement {} for device {}", measurement.id!!.epochSecond, device.id)
+        return true
     }
 
     fun getMeasurements(request: GetMeasurementsRequest): MeasurementProcessor {
@@ -81,15 +104,19 @@ class MeasurementService(
         return device!!
     }
 
-    private fun checkMeasurementNotAddedBeforeInterval(deviceId: Int) {
-        val lastMeasurement = measurementRepository.findLastForDevice(deviceId) ?: return
-
+    private fun checkMeasurementNotAddedBeforeInterval(lastMeasurement: Measurement) {
         val lastTime = lastMeasurement.id!!
         val now = Instant.now()
         if (!lastTime.plusSeconds(minimumCreationInterval.toLong()).isBefore(now)) {
             val remainingCooldown = Duration.between(lastTime, now)
-            throw IllegalStateException("Measurement for device $deviceId added too quickly, need to wait another $remainingCooldown")
+            throw IllegalStateException("Measurement for device ${lastMeasurement.device.id} added too quickly, need to wait another $remainingCooldown")
         }
+    }
+
+    private fun isPrimaryKeyDuplicated(exception: Exception): Boolean {
+        return exception is ExposedSQLException
+                && exception.message?.contains("Duplicate entry") == true
+                && exception.message?.contains("for key 'PRIMARY'") == true
     }
 
     companion object {

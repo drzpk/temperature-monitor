@@ -4,6 +4,7 @@ import dev.drzepka.tempmonitor.server.application.dto.measurement.CreateMeasurem
 import dev.drzepka.tempmonitor.server.application.service.ConfigurationProviderService
 import dev.drzepka.tempmonitor.server.application.service.MeasurementService
 import dev.drzepka.tempmonitor.server.domain.entity.Device
+import dev.drzepka.tempmonitor.server.domain.entity.Logger
 import dev.drzepka.tempmonitor.server.domain.entity.Measurement
 import dev.drzepka.tempmonitor.server.domain.exception.ValidationException
 import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
@@ -38,7 +39,7 @@ internal class MeasurementServiceTest {
         val device = Device().apply { active = true }
         whenever(deviceRepository.findById(eq(1))).thenReturn(device)
 
-        getService().addMeasurement(request)
+        val result = getService().addMeasurement(request, Logger().apply { id = 12 })
 
         val captor = argumentCaptor<Measurement>()
         verify(measurementRepository, times(1)).save(captor.capture())
@@ -46,9 +47,10 @@ internal class MeasurementServiceTest {
         val entity = captor.firstValue
         BDDAssertions.then(entity.device).isSameAs(device)
         BDDAssertions.then(entity.temperature).isEqualTo(BigDecimal("21.00"))
-        BDDAssertions.then(entity.humidity).isEqualTo(56)
+        BDDAssertions.then(entity.humidity).isEqualTo(BigDecimal.valueOf(56))
         BDDAssertions.then(entity.batteryVoltage).isEqualTo(BigDecimal("3.125"))
         BDDAssertions.then(entity.batteryLevel).isEqualTo(84)
+        BDDAssertions.then(result).isTrue()
     }
 
     @Test
@@ -64,7 +66,7 @@ internal class MeasurementServiceTest {
         val device = Device().apply { active = true }
         whenever(deviceRepository.findById(eq(1))).thenReturn(device)
 
-        val caught = catchThrowable { getService().addMeasurement(request) }
+        val caught = catchThrowable { getService().addMeasurement(request, Logger().apply { id = 1 }) }
         BDDAssertions.then(caught).isInstanceOf(ValidationException::class.java)
 
         val validationException = caught as ValidationException
@@ -84,16 +86,43 @@ internal class MeasurementServiceTest {
             batteryLevel = 84
         }
 
-        val device = Device().apply { active = true }
+        val device = Device().apply { id = 1; active = true }
         whenever(deviceRepository.findById(eq(1))).thenReturn(device)
 
         val existingMeasurement = Measurement(device).apply { id = Instant.now() }
         whenever(measurementRepository.findLastForDevice(eq(1))).thenReturn(existingMeasurement)
 
         assertThatIllegalStateException().isThrownBy {
-            getService().addMeasurement(request)
+            getService().addMeasurement(request, Logger().apply { id = 12 })
         }.withMessageContaining("Measurement for device 1 added too quickly, need to wait")
+    }
 
+    @Test
+    fun `should not create measurement it if was already created by another logger`() {
+        val request = CreateMeasurementRequest().apply {
+            deviceId = 1
+            temperature = BigDecimal.valueOf(21)
+            humidity = BigDecimal.valueOf(56L)
+            batteryVoltage = BigDecimal.valueOf(3)
+            batteryLevel = 84
+        }
+
+        val device = Device().apply { id = 1; active = true }
+        whenever(deviceRepository.findById(eq(1))).thenReturn(device)
+
+        val existingMeasurement = Measurement(device).apply {
+            id = Instant.now()
+            temperature = request.temperature
+            humidity = request.humidity
+            loggerId = 22
+        }
+        whenever(measurementRepository.findLastForDevice(eq(1))).thenReturn(existingMeasurement)
+
+        val result = getService().addMeasurement(request, Logger().apply { id = 11 })
+
+        BDDAssertions.then(result).isFalse()
+
+        verify(measurementRepository, times(0)).save(any())
     }
 
     private fun getService(): MeasurementService = MeasurementService(

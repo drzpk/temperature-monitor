@@ -43,6 +43,7 @@ class ExposedMeasurementRepository(private val deviceRepository: DeviceRepositor
         stmt[Measurements.humidity] = entity.humidity
         stmt[Measurements.batteryVoltage] = entity.batteryVoltage
         stmt[Measurements.batteryLevel] = entity.batteryLevel
+        stmt[Measurements.loggerId] = entity.loggerId
     }
 
     private fun rowToEntity(row: ResultRow): Measurement {
@@ -53,6 +54,7 @@ class ExposedMeasurementRepository(private val deviceRepository: DeviceRepositor
             humidity = row[Measurements.humidity]
             batteryVoltage = row[Measurements.batteryVoltage]
             batteryLevel = row[Measurements.batteryLevel]
+            loggerId = row[Measurements.loggerId]
         }
     }
 
