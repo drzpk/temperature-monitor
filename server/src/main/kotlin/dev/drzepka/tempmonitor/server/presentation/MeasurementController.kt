@@ -14,6 +14,7 @@ import io.ktor.routing.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.ktor.ext.get
+import java.time.Instant
 
 fun Route.measurementController() {
 
@@ -37,6 +38,8 @@ fun Route.measurementController() {
                     deviceId = call.parameters["deviceId"]!!.toInt()
                     page = call.parameters["page"]?.toInt() ?: 1
                     size = call.parameters["size"]?.toInt() ?: 10
+                    from = call.parameters["from"]?.let { Instant.ofEpochSecond(it.toLong()) }
+                    to = call.parameters["to"]?.let { Instant.ofEpochSecond(it.toLong()) }
                     aggregationInterval = call.parameters["aggregationInterval"]?.let {
                         MeasurementProcessor.AggregationInterval.valueOf(it)
                     }

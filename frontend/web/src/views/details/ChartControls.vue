@@ -126,7 +126,7 @@
             const diff = baseValue * factor;
 
             const dateTo = new Date();
-            return [dateTo, new Date(dateTo.getTime() - diff)];
+            return [new Date(dateTo.getTime() - diff), dateTo];
         }
 
         private onTimeFromToChanged() {

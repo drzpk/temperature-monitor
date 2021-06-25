@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Vue} from "vue-property-decorator";
+    import {Component, Prop, Vue, Watch} from "vue-property-decorator";
     import * as d3 from "d3";
     import {Axis, ScaleLinear, ScaleTime, Selection} from "d3";
     import {Measurement, MeasurementData} from "@/models/data";
@@ -25,6 +25,9 @@
 
         @Prop({default: ""})
         unit!: string;
+
+        @Prop({required: true})
+        measurements!: Measurement[];
 
         legendText = "placeholder";
 
@@ -43,22 +46,32 @@
         private legendPoint!: SVGPoint;
 
         mounted(): void {
-            const timedData: Array<Measurement> = [];
-            const startTime = new Date().getTime();
-            for (let i = 0; i < 100; i++) {
-                timedData.push({
-                    time: new Date(startTime + i * 10000),
-                    value: 15 + 10 * Math.random()
-                });
+            this.initializeChart();
+            if (this.measurements)
+                this.processMeasurements();
+        }
+
+        @Watch("measurements")
+        onMeasurementsChanged(): void {
+            this.processMeasurements();
+        }
+
+        private processMeasurements(): void {
+            let min = Number.MAX_VALUE;
+            let max = Number.MIN_VALUE;
+
+            for (let i = 0; i < this.measurements.length; i++) {
+                const item = this.measurements[i].value;
+                min = Math.min(min, item);
+                max = Math.max(max, item);
             }
 
             this.data = {
-                minY: 0,
-                maxY: 30,
-                measurements: timedData
+                minY: min,
+                maxY: max,
+                measurements: this.measurements
             };
 
-            this.initializeChart();
             this.updateChart();
         }
 
@@ -108,6 +121,9 @@
                 const measurementIndex = bisector(this.data.measurements, xPositionDate);
 
                 const measurement = this.data.measurements[measurementIndex];
+                if (!measurement)
+                    return;
+
                 const x = this.scaleX(measurement.time);
                 const y = this.scaleY(measurement.value);
 

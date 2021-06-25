@@ -4,7 +4,12 @@ export interface MeasurementData {
     measurements: Array<Measurement>;
 }
 
-export interface Measurement {
+export class Measurement {
     time: Date;
     value: number;
+
+    constructor(time: Date, value: number) {
+        this.time = time;
+        this.value = value;
+    }
 }

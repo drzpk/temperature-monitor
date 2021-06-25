@@ -14,7 +14,11 @@ const module: Module<ChartsState, unknown> = {
     state: {
         chartRange: null
     },
-    getters: {},
+    getters: {
+        chartRange(state): ChartRange | null {
+            return state.chartRange;
+        }
+    },
     mutations: {
         updateChartRange(state: ChartsState, newRange: ChartRange) {
             state.chartRange = newRange;

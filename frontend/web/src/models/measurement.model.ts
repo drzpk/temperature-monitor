@@ -1,4 +1,5 @@
 export interface MeasurementModel {
+    time: number;
     temperature: number;
     humidity: number;
 }
@@ -6,7 +7,9 @@ export interface MeasurementModel {
 export interface GetMeasurementsRequest {
     deviceId: number;
     size: number;
-    aggregationInterval?: AggregationInterval
+    from?: number;
+    to?: number;
+    aggregationInterval?: AggregationInterval;
 }
 
 export enum AggregationInterval {
