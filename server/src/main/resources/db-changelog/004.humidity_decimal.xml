@@ -5,9 +5,8 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-    <include file="db-changelog/001.measurements.xml"/>
-    <include file="db-changelog/002.device_mac_address.xml"/>
-    <include file="db-changelog/003.loggers.xml"/>
-    <include file="db-changelog/004.humidity_decimal.xml"/>
+    <changeSet id="004.humidity_decimal" author="Dominik Rzepka">
+        <modifyDataType tableName="measurements" columnName="humidity" newDataType="decimal(5,2)"/>
+    </changeSet>
 
 </databaseChangeLog>

@@ -65,7 +65,7 @@ class MeasurementService(
 
         if (request.temperature < MIN_ALLOWED_TEMPERATURE || request.temperature > MAX_ALLOWED_TEMPERATURE)
             validation.addFieldError("temperature", "Temperature is out of allowed bounds: [-30; 60].")
-        if (request.humidity < 0 || request.humidity > 100)
+        if (request.humidity < BigDecimal.ZERO || request.humidity > HUNDRED)
             validation.addFieldError("humidity", "Humidity is out of allowed bounds: [0; 100]")
         if (request.batteryLevel < MIN_ALLOWED_BATTERY_LEVEL || request.batteryLevel > MAX_ALLOWED_BATTERY_LEVEL)
             validation.addFieldError("batteryLevel", "Battery level is out of allowed bounds: [0; 100].")
@@ -99,6 +99,8 @@ class MeasurementService(
         private val MAX_ALLOWED_BATTERY_VOLTAGE = BigDecimal.valueOf(10)
         private const val MIN_ALLOWED_BATTERY_LEVEL = 0
         private const val MAX_ALLOWED_BATTERY_LEVEL = 100
+
+        private val HUNDRED = BigDecimal.valueOf(100L)
     }
 
 }

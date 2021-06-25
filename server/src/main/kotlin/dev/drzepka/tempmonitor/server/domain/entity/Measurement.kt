@@ -5,7 +5,7 @@ import java.time.Instant
 
 class Measurement(var device: Device) : Entity<Instant>() {
     var temperature: BigDecimal = BigDecimal.ZERO
-    var humidity = 0
+    var humidity: BigDecimal = BigDecimal.ZERO
     var batteryVoltage: BigDecimal = BigDecimal.ZERO
     var batteryLevel = 0
 }

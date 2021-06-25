@@ -30,7 +30,7 @@ internal class MeasurementServiceTest {
         val request = CreateMeasurementRequest().apply {
             deviceId = 1
             temperature = BigDecimal("21.00")
-            humidity = 56
+            humidity = BigDecimal.valueOf(56)
             batteryVoltage = BigDecimal("3.125")
             batteryLevel = 84
         }
@@ -56,7 +56,7 @@ internal class MeasurementServiceTest {
         val request = CreateMeasurementRequest().apply {
             deviceId = 1
             temperature = BigDecimal.valueOf(500)
-            humidity = 200
+            humidity = BigDecimal.valueOf(200)
             batteryLevel = 101
             batteryVoltage = BigDecimal.valueOf(99)
         }
@@ -79,7 +79,7 @@ internal class MeasurementServiceTest {
         val request = CreateMeasurementRequest().apply {
             deviceId = 1
             temperature = BigDecimal.valueOf(21)
-            humidity = 56
+            humidity = BigDecimal.valueOf(56L)
             batteryVoltage = BigDecimal("3.125")
             batteryLevel = 84
         }

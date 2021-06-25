@@ -7,7 +7,7 @@ import java.time.Instant
 class MeasurementResource {
     var time = Instant.now()
     var temperature = BigDecimal.ZERO
-    var humidity = 0
+    var humidity = BigDecimal.ZERO
 
     companion object {
         fun fromEntity(entity: Measurement): MeasurementResource {

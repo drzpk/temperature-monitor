@@ -27,7 +27,7 @@ class TestMeasurementDataGenerator(
     private fun createRandomMeasurement(): MeasurementResource = MeasurementResource().apply {
         time = currentTime
         temperature = BigDecimal.valueOf((random.nextInt(200) + 50) / 10.0).setScale(1, RoundingMode.FLOOR)
-        humidity = random.nextInt(100) + 1
+        humidity = BigDecimal.valueOf(random.nextInt(100) + 1L)
     }
 
 }
