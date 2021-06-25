@@ -47,6 +47,21 @@
                 <b-form-input type="datetime-local" v-model="timeTo"/>
             </b-form-group>
             <!-- end Absolute -->
+
+            <!-- Aggregation -->
+            <b-form-group label-for="chart-aggregation" label="Aggregation" label-cols="3">
+                <b-form-select id="chart-aggregation" v-model="aggregation">
+                    <b-form-select-option value="">none</b-form-select-option>
+                    <b-form-select-option value="MINUTE">1 minute</b-form-select-option>
+                    <b-form-select-option value="FIVE_MINUTES">5 minutes</b-form-select-option>
+                    <b-form-select-option value="FIVETEEN_MINUTES">15 minutes</b-form-select-option>
+                    <b-form-select-option value="HOUR">1 hour</b-form-select-option>
+                    <b-form-select-option value="DAY">1 day</b-form-select-option>
+                    <b-form-select-option value="WEEK">1 week</b-form-select-option>
+                    <b-form-select-option value="MONTH">1 month</b-form-select-option>
+                </b-form-select>
+            </b-form-group>
+            <!-- end Aggregation -->
         </b-form>
     </div>
 </template>
@@ -61,6 +76,7 @@
         refreshInterval = 60;
         timeFrom = "";
         timeTo = "";
+        aggregation = "";
 
         private timerHandle: number | null = null;
 
@@ -97,6 +113,11 @@
         @Watch("refreshInterval")
         private onRefreshIntervalChanged() {
             this.updateTimer();
+        }
+
+        @Watch("aggregation")
+        private onAggregationChanged() {
+            this.$store.commit("charts/updateChartAggregation", this.aggregation);
         }
 
         private updateTimer() {

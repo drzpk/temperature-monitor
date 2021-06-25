@@ -56,6 +56,7 @@ class MeasurementService(
 
         val processor = MeasurementProcessor(sequence)
         processor.aggregationInterval = request.aggregationInterval
+        processor.maxSize = request.size
         return processor
     }
 

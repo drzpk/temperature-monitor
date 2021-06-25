@@ -42,7 +42,7 @@
     import ChartControls from "@/views/details/ChartControls.vue";
     import {mapState} from "vuex";
     import {DeviceModel} from "@/models/device.model";
-    import {GetMeasurementsRequest, MeasurementModel} from "@/models/measurement.model";
+    import {AggregationInterval, GetMeasurementsRequest, MeasurementModel} from "@/models/measurement.model";
     import {ChartRange} from "@/store/modules/charts";
     import ApiService from "@/services/Api.service";
     import {Measurement} from "@/models/data";
@@ -54,33 +54,41 @@
                 "currentDevice"
             ]),
             ...mapState("charts", [
-                "chartRange"
+                "chartRange",
+                "chartAggregation"
             ])
         }
     })
     export default class DeviceDetails extends Vue {
         currentDevice!: DeviceModel;
         chartRange!: ChartRange | null;
+        chartAggregation!: AggregationInterval | null;
 
         temperatureMeasurements: Measurement[] = [];
         humidityMeasurements: Measurement[] = [];
 
         mounted(): void {
-            if (!this.currentDevice) {
-                const deviceId = parseInt(this.$route.params.id as string);
-                this.$store.dispatch("devices/setCurrentDevice", deviceId);
-            }
+            const deviceId = parseInt(this.$route.params.id as string);
+            this.$store.dispatch("devices/setCurrentDevice", deviceId);
+            this.downloadMeasurements();
+        }
 
+        beforeDestroy(): void {
+            this.$store.dispatch("devices/setCurrentDevice", null);
+        }
+
+        @Watch("currentDevice")
+        private onDeviceChanged(): void {
             this.downloadMeasurements();
         }
 
         @Watch("chartRange")
-        onChartRangeChanged(): void {
+        private onChartRangeChanged(): void {
             this.downloadMeasurements();
         }
 
-        @Watch("currentDevice")
-        onDeviceChanged(): void {
+        @Watch("chartAggregation")
+        private onChartAggregationChanged(): void {
             this.downloadMeasurements();
         }
 
@@ -92,7 +100,8 @@
                 deviceId: this.currentDevice.id,
                 size: 10_000,
                 from: this.chartRange != null ? Math.floor(this.chartRange.startDate.getTime() / 1000) : undefined,
-                to: this.chartRange != null ? Math.floor(this.chartRange.endDate.getTime() / 1000) : undefined
+                to: this.chartRange != null ? Math.floor(this.chartRange.endDate.getTime() / 1000) : undefined,
+                aggregationInterval: this.chartAggregation || undefined
             };
 
             ApiService.getMeasurements(request).then(measurements => {

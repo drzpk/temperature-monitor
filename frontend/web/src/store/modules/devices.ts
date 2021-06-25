@@ -81,8 +81,10 @@ const module: Module<DevicesState, unknown> = {
             if (context.state.devices) {
                 for (let i = 0; i < context.state.devices.length; i++) {
                     const model = context.state.devices[i];
-                    if (model.id === deviceId)
+                    if (model.id === deviceId) {
+                        context.commit("setCurrentDevice", model);
                         return Promise.resolve(model);
+                    }
                 }
             }
 

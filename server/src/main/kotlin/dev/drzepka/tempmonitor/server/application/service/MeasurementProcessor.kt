@@ -21,6 +21,7 @@ import java.time.temporal.TemporalUnit
 class MeasurementProcessor(private val sequence: Sequence<MeasurementData>) {
 
     var aggregationInterval: AggregationInterval? = null
+    var maxSize: Int? = null
 
     private var currentAggregationMeasurement: MeasurementResource? = null
     private var currentAggregationCount = 0
@@ -38,13 +39,15 @@ class MeasurementProcessor(private val sequence: Sequence<MeasurementData>) {
     }
 
     private fun writeSequence(generator: JsonGenerator) {
+        val limitedSequence = if (maxSize != null) sequence.take(maxSize!!) else sequence
+
         if (aggregationInterval != null)
-            aggregateAndWriteSequence(generator)
+            aggregateAndWriteSequence(limitedSequence, generator)
         else
-            sequence.forEach { objectMapper.writeValue(generator, it) }
+            limitedSequence.forEach { objectMapper.writeValue(generator, it) }
     }
 
-    private fun aggregateAndWriteSequence(generator: JsonGenerator) {
+    private fun aggregateAndWriteSequence(sequence: Sequence<MeasurementData>, generator: JsonGenerator) {
         val iterator = sequence.iterator()
         if (!iterator.hasNext())
             return

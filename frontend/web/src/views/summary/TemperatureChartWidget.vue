@@ -40,7 +40,7 @@ import {AggregationInterval} from "@/models/measurement.model";
         private downloadData(): void {
             const request: GetMeasurementsRequest = {
                 deviceId: this.deviceId,
-                size: 9999,
+                size: 1000,
                 aggregationInterval: AggregationInterval.FIVE_MINUTES
             };
             ApiService.getMeasurements(request).then(data => {
