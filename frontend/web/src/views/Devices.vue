@@ -15,8 +15,9 @@
             <b-row>
                 <b-col cols="12" sm="10" offset-sm="1" md="8" offset-md="2" xl="10" offset-xl="1">
                     <div id="panels">
-                        <div class="panel-wrapper" v-for="x in 10" :key="x" @click="goToDevice(x)">
-                            <DeviceSummaryPanel/>
+                        <div class="panel-wrapper" v-for="device in devices" :key="device.id"
+                             @click="goToDevice(device.id)">
+                            <DeviceSummaryPanel :device="device"/>
                         </div>
                     </div>
                 </b-col>
@@ -28,16 +29,30 @@
 <script lang="ts">
     import {Component, Vue} from "vue-property-decorator";
     import DeviceSummaryPanel from "@/views/summary/DeviceSummaryPanel.vue";
+    import {DeviceModel} from "@/models/device.model";
+    import {mapGetters} from "vuex";
 
     @Component({
         components: {
             DeviceSummaryPanel
+        },
+        computed: {
+            ...mapGetters("devices", ["devices"])
         }
     })
     export default class Devices extends Vue {
+        devices!: DeviceModel[];
+
+        private intervalHandle: number | null = null;
 
         mounted(): void {
-            this.$store.commit("charts/setActiveDevice", null);
+            this.refreshDevices();
+            this.intervalHandle = setInterval(this.refreshDevices, 10_000);
+        }
+
+        beforeDestroy(): void {
+            if (this.intervalHandle)
+                clearInterval(this.intervalHandle);
         }
 
         settings() {
@@ -48,6 +63,10 @@
             this.$store.dispatch("devices/setCurrentDevice", id).then(() => {
                 this.$router.push(`/devices/${id}/details`);
             })
+        }
+
+        private refreshDevices(): void {
+            this.$store.dispatch("devices/refreshDevices");
         }
     }
 </script>

@@ -2,28 +2,34 @@
     <div class="panel">
         <div class="panel-left">
             <div class="panel-left-text">
-                <div class="device-name">example device</div>
-                <div class="temperature"><span>21.3</span>&nbsp;&#176;C</div>
+                <div class="device-name">{{device.name}}</div>
+                <div v-if="device.lastMeasurement" class="temperature">
+                    <span>{{device.lastMeasurement.temperature}}</span>&nbsp;&#176;C
+                </div>
+                <div v-else>no measurements available</div>
             </div>
             <div class="temperature-histogram">
-                <TemperatureChartWidget/>
+                <TemperatureChartWidget :device-id="device.id"/>
             </div>
         </div>
         <div class="panel-right">
-            <HumidityWidget/>
+            <HumidityWidget :humidity="device.lastMeasurement != null && device.lastMeasurement.humidity || null"/>
         </div>
     </div>
 </template>
 
 <script lang="ts">
-    import {Component, Vue} from "vue-property-decorator";
+    import {Component, Prop, Vue} from "vue-property-decorator";
     import HumidityWidget from "@/views/summary/HumidityWidget.vue";
     import TemperatureChartWidget from "@/views/summary/TemperatureChartWidget.vue";
+    import {DeviceModel} from "@/models/device.model";
 
     @Component({
         components: {HumidityWidget, TemperatureChartWidget}
     })
     export default class DeviceSummaryPanel extends Vue {
+        @Prop({required: true})
+        readonly device!: DeviceModel;
     }
 </script>
 

@@ -15,6 +15,7 @@ class LoggerServiceTest {
 
     private val loggerRepository = mock<LoggerRepository>()
     private val passwordGeneratorService = mock<PasswordGeneratorService>()
+    private val hashService = mock<HashService>()
 
     @Test
     fun `should create logger`() {
@@ -75,5 +76,5 @@ class LoggerServiceTest {
         then(entity.password).isEqualTo("hash")
     }
 
-    private fun getService(): LoggerService = LoggerService(loggerRepository, passwordGeneratorService)
+    private fun getService(): LoggerService = LoggerService(loggerRepository, passwordGeneratorService, hashService)
 }

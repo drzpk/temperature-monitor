@@ -20,8 +20,6 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core:2.11.0")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.11.0")
-    implementation("io.ktor:ktor-client-core:1.5.2")
-    implementation("io.ktor:ktor-client-cio:1.5.2")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.1")
     testImplementation("org.assertj:assertj-core:3.19.0")

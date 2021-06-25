@@ -1,6 +1,7 @@
 import axios from "axios";
 import {AddDeviceRequest, DeviceModel, UpdateDeviceRequest} from "@/models/device.model";
 import {CreateLoggerRequest, LoggerModel, UpdateLoggerRequest} from "@/models/logger.model";
+import {GetMeasurementsRequest, MeasurementModel} from "@/models/measurement.model";
 
 function responseErrorHandler(error: Error): never {
     // nothing here yet
@@ -68,6 +69,12 @@ class ApiService {
 
     resetLoggerPassword(loggerId: number): Promise<LoggerModel> {
         return axios.delete<LoggerModel>(`/api/loggers/${loggerId}/password`)
+            .then(response => response.data)
+            .catch(responseErrorHandler);
+    }
+
+    getMeasurements(request: GetMeasurementsRequest): Promise<MeasurementModel[]> {
+        return axios.get<MeasurementModel[]>("/api/measurements", {params: request})
             .then(response => response.data)
             .catch(responseErrorHandler);
     }

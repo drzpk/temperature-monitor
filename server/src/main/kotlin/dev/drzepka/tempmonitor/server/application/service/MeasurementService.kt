@@ -3,12 +3,10 @@ package dev.drzepka.tempmonitor.server.application.service
 import dev.drzepka.tempmonitor.server.application.ValidationErrors
 import dev.drzepka.tempmonitor.server.application.dto.measurement.CreateMeasurementRequest
 import dev.drzepka.tempmonitor.server.application.dto.measurement.GetMeasurementsRequest
-import dev.drzepka.tempmonitor.server.application.dto.measurement.MeasurementResource
 import dev.drzepka.tempmonitor.server.domain.entity.Device
 import dev.drzepka.tempmonitor.server.domain.entity.Measurement
 import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
 import dev.drzepka.tempmonitor.server.domain.repository.MeasurementRepository
-import dev.drzepka.tempmonitor.server.domain.service.measurement.MeasurementProcessor
 import dev.drzepka.tempmonitor.server.domain.service.measurement.TestMeasurementDataGenerator
 import dev.drzepka.tempmonitor.server.domain.util.Logger
 import java.math.BigDecimal
@@ -54,10 +52,11 @@ class MeasurementService(
             // Check if device exists
             deviceRepository.findById(request.deviceId)!!
             measurementRepository.findForDevice(request.deviceId, request)
-                .map { MeasurementResource.fromEntity(it) }
         }
 
-        return MeasurementProcessor(sequence)
+        val processor = MeasurementProcessor(sequence)
+        processor.aggregationInterval = request.aggregationInterval
+        return processor
     }
 
     private fun validateAddMeasurement(request: CreateMeasurementRequest): Device {

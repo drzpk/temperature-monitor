@@ -4,6 +4,7 @@ import dev.drzepka.tempmonitor.server.domain.TimeRangeQuery
 import dev.drzepka.tempmonitor.server.domain.entity.Measurement
 import dev.drzepka.tempmonitor.server.domain.repository.DeviceRepository
 import dev.drzepka.tempmonitor.server.domain.repository.MeasurementRepository
+import dev.drzepka.tempmonitor.server.domain.value.MeasurementData
 import dev.drzepka.tempmonitor.server.infrastructure.repository.table.Measurements
 import dev.drzepka.tempmonitor.server.infrastructure.repository.util.timeRangeQuery
 import org.jetbrains.exposed.sql.ResultRow
@@ -22,12 +23,11 @@ class ExposedMeasurementRepository(private val deviceRepository: DeviceRepositor
             ?.let { rowToEntity(it) }
     }
 
-    override fun findForDevice(deviceId: Int, timeRangeQuery: TimeRangeQuery): kotlin.sequences.Sequence<Measurement> {
+    override fun findForDevice(deviceId: Int, timeRangeQuery: TimeRangeQuery): Sequence<MeasurementData> {
         return Measurements.select { Measurements.deviceId eq deviceId }
             .timeRangeQuery(timeRangeQuery, Measurements.id)
             .asSequence()
-            .map { rowToEntity(it) }
-
+            .map { rowToMeasurementData(it) }
     }
 
     override fun save(measurement: Measurement) {
@@ -49,6 +49,16 @@ class ExposedMeasurementRepository(private val deviceRepository: DeviceRepositor
         val device = deviceRepository.findById(row[Measurements.deviceId])!!
         return Measurement(device).apply {
             id = row[Measurements.id].value
+            temperature = row[Measurements.temperature]
+            humidity = row[Measurements.humidity]
+            batteryVoltage = row[Measurements.batteryVoltage]
+            batteryLevel = row[Measurements.batteryLevel]
+        }
+    }
+
+    private fun rowToMeasurementData(row: ResultRow): MeasurementData {
+        return MeasurementData().apply {
+            time = row[Measurements.id].value
             temperature = row[Measurements.temperature]
             humidity = row[Measurements.humidity]
             batteryVoltage = row[Measurements.batteryVoltage]

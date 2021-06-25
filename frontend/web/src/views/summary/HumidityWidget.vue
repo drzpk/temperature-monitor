@@ -6,7 +6,8 @@
             <div>
                 <font-awesome-icon icon="tint"/>
             </div>
-            <div>{{ humidity }}%</div>
+            <div v-if="humidity != null">{{ Math.floor(humidity + 0.5) }}%</div>
+            <div v-else class="no-data">no data</div>
         </div>
     </div>
 </template>
@@ -14,7 +15,7 @@
 <script lang="ts">
     import * as d3 from "d3";
     import {Arc, DefaultArcObject, Selection} from "d3";
-    import {Component, Prop, Vue} from "vue-property-decorator";
+    import {Component, Prop, Vue, Watch} from "vue-property-decorator";
 
     const VIEWBOX_WIDTH = 300;
     const RADIUS = 125;
@@ -24,23 +25,25 @@
     @Component
     export default class HumidityWidget extends Vue {
 
-        @Prop(Number)
-        readonly deviceId!: number;
+        @Prop({required: true})
+        readonly humidity!: number | null;
 
         private svg!: Element;
         private foregroundArc!: Arc<any, DefaultArcObject>;
         private foregroundPath!: Selection<any, unknown, any, unknown>;
-        private humidity = 0;
 
         mounted(): void {
             this.svg = this.$el.getElementsByTagName("svg")[0];
             this.initializeWidget();
 
-            setInterval(() => {
-                const old = this.humidity;
-                this.humidity = Math.floor(100 * Math.random());
-                this.updateWidget(old);
-            }, 3000);
+            if (this.humidity != null)
+                this.updateWidget(this.humidity, 0);
+        }
+
+        @Watch("humidity")
+        onHumidityUpdated(newValue: number | null, oldValue: number | null): void {
+            if (newValue != null && oldValue != null)
+                this.updateWidget(newValue, oldValue);
         }
 
         private initializeWidget() {
@@ -72,11 +75,11 @@
                 .attr("d", this.foregroundArc());
         }
 
-        private updateWidget(oldHumidity: number) {
+        private updateWidget(currentHumidity: number, oldHumidity: number) {
             this.foregroundPath.transition()
                 .duration(ANIMATION_DURATION)
                 .attrTween("d", () => {
-                    const distance = this.humidity - oldHumidity;
+                    const distance = currentHumidity - oldHumidity;
                     return (t: number) => {
                         const fillPercent = (oldHumidity + distance * t) / 100;
                         this.foregroundArc.endAngle(2 * Math.PI * fillPercent);
@@ -128,6 +131,10 @@
             justify-content: center;
 
             font-size: 1.6em;
+        }
+
+        .no-data {
+            font-size: 0.7em;
         }
     }
 </style>

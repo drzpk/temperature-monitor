@@ -14,6 +14,12 @@ const module: Module<DevicesState, unknown> = {
         currentDevice: null
     },
     getters: {
+        devices(state): DeviceModel[] {
+            if (state.devices)
+                return state.devices;
+            else
+                return [];
+        },
         currentDevice(state): DeviceModel | null {
             return state.currentDevice;
         }

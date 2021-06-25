@@ -3,6 +3,7 @@ package dev.drzepka.tempmonitor.server.presentation
 import dev.drzepka.tempmonitor.server.application.configuration.MEASUREMENTS_AUTH
 import dev.drzepka.tempmonitor.server.application.dto.measurement.CreateMeasurementRequest
 import dev.drzepka.tempmonitor.server.application.dto.measurement.GetMeasurementsRequest
+import dev.drzepka.tempmonitor.server.application.service.MeasurementProcessor
 import dev.drzepka.tempmonitor.server.application.service.MeasurementService
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -10,6 +11,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.ktor.ext.get
 
@@ -33,13 +35,18 @@ fun Route.measurementController() {
             val request = GetMeasurementsRequest()
                 .apply {
                     deviceId = call.parameters["deviceId"]!!.toInt()
+                    page = call.parameters["page"]?.toInt() ?: 1
+                    size = call.parameters["size"]?.toInt() ?: 10
+                    aggregationInterval = call.parameters["aggregationInterval"]?.let {
+                        MeasurementProcessor.AggregationInterval.valueOf(it)
+                    }
                 }
-            val processor = transaction {
-                measurementService.getMeasurements(request)
-            }
 
-            call.respondOutputStream(contentType = ContentType.Application.Json) {
-                processor.writeToStream(this@respondOutputStream)
+            newSuspendedTransaction {
+                val processor = measurementService.getMeasurements(request)
+                call.respondOutputStream(contentType = ContentType.Application.Json) {
+                    processor.writeToStream(this@respondOutputStream)
+                }
             }
         }
     }
