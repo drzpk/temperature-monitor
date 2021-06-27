@@ -28,6 +28,7 @@ internal class DeviceServiceTest {
         val request = CreateDeviceRequest().apply {
             name = "name"
             description = "description"
+            mac = "mac"
         }
 
         whenever(deviceRepository.save(any())).thenAnswer { invocation ->
@@ -56,13 +57,15 @@ internal class DeviceServiceTest {
         then(caught).isInstanceOf(ValidationException::class.java)
 
         val validationException = caught as ValidationException
-        then(validationException.validationErrors.errors).hasSize(2)
+        then(validationException.validationErrors.errors).hasSize(3)
 
         val validationErrors = validationException.validationErrors.errors
         then(validationErrors[0]).isInstanceOf(FieldError::class.java)
         then((validationErrors[0] as FieldError).field).isEqualTo("name")
         then(validationErrors[1]).isInstanceOf(FieldError::class.java)
         then((validationErrors[1] as FieldError).field).isEqualTo("description")
+        then(validationErrors[2]).isInstanceOf(FieldError::class.java)
+        then((validationErrors[2] as FieldError).field).isEqualTo("mac")
     }
 
     @Test

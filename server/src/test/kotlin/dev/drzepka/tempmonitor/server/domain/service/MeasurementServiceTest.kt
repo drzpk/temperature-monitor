@@ -97,34 +97,6 @@ internal class MeasurementServiceTest {
         }.withMessageContaining("Measurement for device 1 added too quickly, need to wait")
     }
 
-    @Test
-    fun `should not create measurement it if was already created by another logger`() {
-        val request = CreateMeasurementRequest().apply {
-            deviceId = 1
-            temperature = BigDecimal.valueOf(21)
-            humidity = BigDecimal.valueOf(56L)
-            batteryVoltage = BigDecimal.valueOf(3)
-            batteryLevel = 84
-        }
-
-        val device = Device().apply { id = 1; active = true }
-        whenever(deviceRepository.findById(eq(1))).thenReturn(device)
-
-        val existingMeasurement = Measurement(device).apply {
-            id = Instant.now()
-            temperature = request.temperature
-            humidity = request.humidity
-            loggerId = 22
-        }
-        whenever(measurementRepository.findLastForDevice(eq(1))).thenReturn(existingMeasurement)
-
-        val result = getService().addMeasurement(request, Logger().apply { id = 11 })
-
-        BDDAssertions.then(result).isFalse()
-
-        verify(measurementRepository, times(0)).save(any())
-    }
-
     private fun getService(): MeasurementService = MeasurementService(
         configurationProviderService,
         deviceRepository,
